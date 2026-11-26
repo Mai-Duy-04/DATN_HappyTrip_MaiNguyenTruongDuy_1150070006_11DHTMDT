@@ -1,0 +1,1739 @@
+========== \Models\BookingPaymentStatus.cs ==========
+namespace TourWebApp.Models;
+
+public static class BookingPaymentStatus
+{
+    public const string TrangThaiChoThanhToan = "ChoThanhToan";
+    public const string TrangThaiDaHuy = "DaHuy";
+    public const string TrangThaiThanhToanThanhCong = "ThanhToanThanhCong";
+    public const string TrangThaiChoXacNhanTienMat = "ChoXacNhanTienMat";
+
+    public const string TrangThaiTtChoThanhToan = "ChoThanhToan";
+    public const string TrangThaiTtHetHanThanhToan = "HetHanThanhToan";
+    public const string TrangThaiTtDangXuLyVnpay = "DangXuLyVNPAY";
+    public const string TrangThaiTtThanhToanThanhCong = "ThanhToanThanhCong";
+    public const string TrangThaiTtChoThuTienMat = "ChoThuTienMat";
+
+    public const string PhuongThucVnpay = "VNPAY";
+    public const string PhuongThucTienMat = "TienMat";
+    public const string PhuongThucMienPhi = "MienPhi";
+    public const string PhuongThucChuyenKhoanQr = "ChuyenKhoanQR";
+}
+
+========== \Models\EmailSettings.cs ==========
+namespace TourWebApp.Models;
+
+public class EmailSettings
+{
+    public string SmtpHost { get; set; } = string.Empty;
+    public int SmtpPort { get; set; } = 587;
+    public string SenderName { get; set; } = "HappyTrip";
+    public string SenderEmail { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public bool EnableSsl { get; set; } = true;
+}
+
+
+========== \Models\ErrorViewModel.cs ==========
+namespace TourWebApp.Models;
+
+public class ErrorViewModel
+{
+    public string? RequestId { get; set; }
+
+    public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+}
+
+
+========== \Models\Travel\TravelContentModels.cs ==========
+namespace TourWebApp.Models.Travel;
+
+public class DestinationItem
+{
+    public required string Slug { get; set; }
+    public required string Name { get; set; }
+    public required string Country { get; set; }
+    public required string Category { get; set; }
+    public required string Description { get; set; }
+    public decimal PriceFrom { get; set; }
+    public required string ImageUrl { get; set; }
+}
+
+public class TourPackageItem
+{
+    public required string Slug { get; set; }
+    public required string Name { get; set; }
+    public required string Category { get; set; }
+    public required string Duration { get; set; }
+    public double Rating { get; set; }
+    public decimal Price { get; set; }
+    public required string Description { get; set; }
+    public required string ImageUrl { get; set; }
+}
+
+public class FeatureItem
+{
+    public required string IconClass { get; set; }
+    public required string Title { get; set; }
+    public required string Description { get; set; }
+}
+
+public class GuidePostItem
+{
+    public required string Slug { get; set; }
+    public required string Title { get; set; }
+    public required string Summary { get; set; }
+    public required string DateLabel { get; set; }
+    public required string ImageUrl { get; set; }
+}
+
+public class TestimonialItem
+{
+    public required string Name { get; set; }
+    public required string Title { get; set; }
+    public required string Quote { get; set; }
+    public required string AvatarUrl { get; set; }
+    public int Rating { get; set; }
+}
+
+public class TeamMemberItem
+{
+    public required string Name { get; set; }
+    public required string Role { get; set; }
+    public required string Bio { get; set; }
+    public required string ImageUrl { get; set; }
+}
+
+public class StatItem
+{
+    public required string Value { get; set; }
+    public required string Label { get; set; }
+}
+
+
+========== \Models\ViewModels\DanhSachChoAdminVM.cs ==========
+namespace TourWebApp.Models.ViewModels;
+
+public sealed class DanhSachChoAdminVM
+{
+    public int IdDanhSachCho { get; set; }
+    public int IdLich { get; set; }
+    public string TenTour { get; set; } = string.Empty;
+    public DateOnly NgayKhoiHanh { get; set; }
+    public string HoTen { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? SoDienThoai { get; set; }
+    public int SoKhach { get; set; }
+    public DateTime NgayDangKy { get; set; }
+    public string TrangThai { get; set; } = string.Empty;
+}
+
+
+========== \Models\ViewModels\LichKhoiHanhAdminVM.cs ==========
+namespace TourWebApp.ViewModels
+{
+    public class LichKhoiHanhAdminVM
+    {
+        public int IdLich { get; set; }
+        public int IdTour { get; set; }
+
+        // 👉 Thêm default để khỏi warning non-null
+        public string TenTour { get; set; } = string.Empty;
+
+        public DateOnly NgayKhoiHanh { get; set; }
+        public TimeOnly? GioKhoiHanh { get; set; }
+
+        public int SoChoToiDa { get; set; }
+        public int SoChoConLai { get; set; }
+
+        public string TrangThai { get; set; } = string.Empty;
+
+        // 👉 CHỈ 1 property SoDonDangKy thôi
+        public int SoDonDangKy { get; set; }
+    }
+}
+
+
+========== \Models\ViewModels\LoaiTourListVM.cs ==========
+namespace TourWebApp.Models.ViewModels
+{
+    public class LoaiTourListVM
+    {
+        public int IdLoaiTour { get; set; }
+        public string TenLoai { get; set; } = "";
+        public string? MoTa { get; set; }
+        public int SoTour { get; set; }
+    }
+}
+
+
+========== \Models\ViewModels\NhapThongTinVM.cs ==========
+namespace TourWebApp.Models.ViewModels
+{
+    public class NhapThongTinVM
+    {
+        public const string PaymentMethodVnpay = "VNPAY";
+        public const string PaymentMethodCash = "TienMat";
+
+        public int IdTour { get; set; }
+        public int IdLich { get; set; }
+
+        public string TenTour { get; set; } = string.Empty;
+        public DateTime NgayKhoiHanh { get; set; }
+
+        // So luong khach
+        public int NguoiLon { get; set; }
+        public int TreEm { get; set; }
+        public int EmBe { get; set; }
+
+        // Gia (chi de hien thi tren form, khong tin client)
+        public decimal GiaNguoiLon { get; set; }
+        public decimal GiaTreEm { get; set; }
+        public decimal GiaEmBe { get; set; }
+
+        // Tong tien
+        public decimal TongTien { get; set; }
+        public decimal SoTienGiam { get; set; }
+        public decimal TongTienSauGiam { get; set; }
+        public string? MaPhieuGiamGia { get; set; }
+
+        public int TongKhach => NguoiLon + TreEm + EmBe;
+
+        // Thong tin lien he
+        public string HoTen { get; set; } = string.Empty;
+        public string SDT { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+
+        public string GhiChu { get; set; } = string.Empty;
+
+        public string PhuongThucThanhToan { get; set; } = PaymentMethodVnpay;
+    }
+}
+
+
+========== \Models\ViewModels\QuanLyTourViewModel.cs ==========
+using System.Collections.Generic;
+using TourWebApp.Data.Models;
+
+namespace TourWebApp.ViewModels
+{
+    public class QuanLyTourViewModel
+    {
+        public List<Tour> Tours { get; set; } = new();
+        public List<LoaiTour> LoaiTours { get; set; } = new();
+
+        // lọc
+        public int? IdLoaiTour { get; set; }
+        public string? TuKhoa { get; set; }
+    }
+}
+
+
+========== \Models\ViewModels\TourCompareVM.cs ==========
+namespace TourWebApp.Models.ViewModels;
+
+public class TourCompareVM
+{
+    public int IdTour { get; set; }
+    public string MaTour { get; set; } = string.Empty;
+    public string TenTour { get; set; } = string.Empty;
+    public string? DiaDiem { get; set; }
+    public string? ThoiGian { get; set; }
+    public string? PhuongTien { get; set; }
+    public decimal? GiaNguoiLon { get; set; }
+    public int SoChoConLai { get; set; }
+    public string? HinhAnh { get; set; }
+    public int LuotXem { get; set; }
+}
+
+
+========== \Models\ViewModels\TourFilterVM.cs ==========
+namespace TourWebApp.Models.ViewModels
+{
+    public class TourListVM
+    {
+        public List<Data.Models.Tour> Tours { get; set; } = new List<Data.Models.Tour>();
+
+        // ========== BỘ LỌC ==========
+        public string? DiaDiem { get; set; }
+        public int? SoNgay { get; set; }
+        public int? GiaMin { get; set; }
+        public int? GiaMax { get; set; }
+        public string? Sort { get; set; }
+    }
+}
+
+
+========== \Models\ViewModels\TourLoaiVM.cs ==========
+using TourWebApp.Data.Models;
+
+namespace TourWebApp.Models.ViewModels
+{
+    public class TourLoaiVM
+    {
+        public Tour? Tour { get; set; }
+        public LichKhoiHanh? Lich { get; set; }
+    }
+}
+
+
+========== \Models\ViewModels\Travel\TravelComponentViewModels.cs ==========
+namespace TourWebApp.Models.ViewModels.Travel;
+
+public class SectionHeadingModel
+{
+    public string Kicker { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string AlignClass { get; set; } = "text-center";
+}
+
+public class HeroModel
+{
+    public string Title { get; set; } = string.Empty;
+    public string Subtitle { get; set; } = string.Empty;
+    public string PrimaryButtonText { get; set; } = string.Empty;
+    public string PrimaryButtonUrl { get; set; } = string.Empty;
+    public string SecondaryButtonText { get; set; } = string.Empty;
+    public string SecondaryButtonUrl { get; set; } = string.Empty;
+    public string BackgroundImageUrl { get; set; } = string.Empty;
+}
+
+public class CtaSectionModel
+{
+    public string Title { get; set; } = string.Empty;
+    public string Subtitle { get; set; } = string.Empty;
+    public string PrimaryButtonText { get; set; } = string.Empty;
+    public string PrimaryButtonUrl { get; set; } = string.Empty;
+    public string SecondaryButtonText { get; set; } = string.Empty;
+    public string SecondaryButtonUrl { get; set; } = string.Empty;
+    public string BackgroundImageUrl { get; set; } = string.Empty;
+}
+
+
+========== \Models\ViewModels\Travel\TravelPageViewModels.cs ==========
+using System.ComponentModel.DataAnnotations;
+using TourWebApp.Models.Travel;
+
+namespace TourWebApp.Models.ViewModels.Travel;
+
+public class ContactFormInput
+{
+    [Required(ErrorMessage = "Vui lòng nhập họ và tên.")]
+    [StringLength(100, ErrorMessage = "Họ tên tối đa 100 ký tự.")]
+    public string Name { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Vui lòng nhập email.")]
+    [EmailAddress(ErrorMessage = "Email không đúng định dạng.")]
+    [StringLength(100, ErrorMessage = "Email tối đa 100 ký tự.")]
+    public string Email { get; set; } = string.Empty;
+
+    [StringLength(100, ErrorMessage = "Điểm đến tối đa 100 ký tự.")]
+    public string Destination { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Vui lòng nhập nội dung cần tư vấn.")]
+    [StringLength(
+        2000,
+        MinimumLength = 10,
+        ErrorMessage = "Nội dung phải từ 10 đến 2000 ký tự.")]
+    public string Message { get; set; } = string.Empty;
+}
+
+public class TravelHomeViewModel
+{
+    public required IReadOnlyList<FeatureItem> WhyTravelWithUs { get; set; }
+    public required IReadOnlyList<DestinationItem> FeaturedDestinations { get; set; }
+    public required IReadOnlyList<TourPackageItem> PopularTours { get; set; }
+    public required IReadOnlyList<GuidePostItem> GuidePosts { get; set; }
+    public required IReadOnlyList<TestimonialItem> Testimonials { get; set; }
+}
+
+public class TravelDestinationsViewModel
+{
+    public required IReadOnlyList<string> Filters { get; set; }
+    public required IReadOnlyList<DestinationItem> Items { get; set; }
+    public required string SelectedFilter { get; set; }
+}
+
+public class TravelToursViewModel
+{
+    public required IReadOnlyList<string> Filters { get; set; }
+    public required IReadOnlyList<TourPackageItem> Items { get; set; }
+    public required string SelectedFilter { get; set; }
+}
+
+public class TravelDestinationDetailViewModel
+{
+    public required DestinationItem Item { get; set; }
+    public required IReadOnlyList<DestinationItem> RelatedDestinations { get; set; }
+}
+
+public class TravelTourDetailViewModel
+{
+    public required TourPackageItem Item { get; set; }
+    public required IReadOnlyList<TourPackageItem> RelatedTours { get; set; }
+}
+
+public class TravelAboutViewModel
+{
+    public required IReadOnlyList<TeamMemberItem> TeamMembers { get; set; }
+    public required IReadOnlyList<StatItem> Stats { get; set; }
+}
+
+public class TravelContactViewModel
+{
+    public ContactFormInput Form { get; set; } = new();
+    public bool IsSubmitted { get; set; }
+    public string SuccessMessage { get; set; } = string.Empty;
+}
+
+
+========== \Data\TravelContentData.cs ==========
+using TourWebApp.Models.Travel;
+
+namespace TourWebApp.Data;
+
+public static class TravelContentData
+{
+    public const string AllDestinationsFilter = "Tất cả";
+    public const string AllToursFilter = "Tất cả";
+
+    public static readonly IReadOnlyList<string> DestinationFilters =
+        new[] { AllDestinationsFilter, "Biển", "Núi", "Văn hóa", "Thành phố", "Khám phá" };
+
+    public static readonly IReadOnlyList<string> TourFilters =
+        new[] { AllToursFilter, "Khám phá", "Biển", "Văn hóa", "Nghỉ dưỡng" };
+
+    public static readonly IReadOnlyList<FeatureItem> WhyTravelWithUs =
+        new List<FeatureItem>
+        {
+            new() { IconClass = "fa-solid fa-route", Title = "Lịch trình tối ưu", Description = "Mỗi lịch trình được HappyTrip thiết kế rõ ràng, cân bằng giữa tham quan, nghỉ ngơi và trải nghiệm thực tế." },
+            new() { IconClass = "fa-solid fa-user-group", Title = "Hướng dẫn viên bản địa", Description = "Đội ngũ hướng dẫn viên giàu kinh nghiệm, am hiểu địa phương và luôn đồng hành xuyên suốt chuyến đi." },
+            new() { IconClass = "fa-solid fa-calendar-check", Title = "Đặt tour linh hoạt", Description = "Tư vấn theo nhu cầu thật, hỗ trợ đổi lịch hợp lý và minh bạch mọi chi phí trước khi xác nhận." },
+            new() { IconClass = "fa-solid fa-headset", Title = "Hỗ trợ nhanh 24/7", Description = "Từ lúc lên kế hoạch đến khi kết thúc hành trình, HappyTrip luôn sẵn sàng hỗ trợ khi bạn cần." }
+        };
+
+    public static readonly IReadOnlyList<DestinationItem> Destinations =
+        new List<DestinationItem>
+        {
+            new()
+            {
+                Slug = "phu-quoc",
+                Name = "Phú Quốc",
+                Country = "Việt Nam",
+                Category = "Biển",
+                Description = "Đảo ngọc với biển xanh trong vắt, những bãi cát trắng và khung cảnh hoàng hôn tuyệt đẹp.",
+                PriceFrom = 3850000m,
+                ImageUrl = "/img/tours/phuquoc.jpg"
+            },
+            new()
+            {
+                Slug = "vung-tau",
+                Name = "Vũng Tàu",
+                Country = "Việt Nam",
+                Category = "Biển",
+                Description = "Thành phố biển nổi bật với cung đường ven biển, ngọn hải đăng và làn gió đại dương.",
+                PriceFrom = 1050000m,
+                ImageUrl = "/img/tours/vungtau.jpg"
+            },
+            new()
+            {
+                Slug = "da-lat",
+                Name = "Đà Lạt",
+                Country = "Việt Nam",
+                Category = "Núi",
+                Description = "Thành phố sương mù với rừng thông xanh, những đồi hoa và bầu không khí mát lành.",
+                PriceFrom = 2890000m,
+                ImageUrl = "/img/tours/dalat.jpg"
+            },
+            new()
+            {
+                Slug = "can-tho",
+                Name = "Cần Thơ",
+                Country = "Việt Nam",
+                Category = "Văn hóa",
+                Description = "Chợ nổi buổi sớm, những dòng sông hiền hòa và nét văn hóa đặc trưng của miền Tây.",
+                PriceFrom = 1490000m,
+                ImageUrl = "/img/tours/cantho.jpg"
+            },
+            new()
+            {
+                Slug = "sai-gon",
+                Name = "TP. Hồ Chí Minh",
+                Country = "Việt Nam",
+                Category = "Thành phố",
+                Description = "Đô thị năng động với kiến trúc lịch sử, những con phố nhộn nhịp và ẩm thực phong phú.",
+                PriceFrom = 1290000m,
+                ImageUrl = "/img/tours/saigon-city.jpg"
+            },
+            new()
+            {
+                Slug = "mien-tay",
+                Name = "Miền Tây sông nước",
+                Country = "Việt Nam",
+                Category = "Khám phá",
+                Description = "Miệt vườn xanh mát, những chuyến đò bình dị và nét đẹp mộc mạc của vùng sông nước.",
+                PriceFrom = 1590000m,
+                ImageUrl = "/img/home/mientay.jpg"
+            },
+            new()
+            {
+                Slug = "ben-tre",
+                Name = "Bến Tre",
+                Country = "Việt Nam",
+                Category = "Văn hóa",
+                Description = "Xứ dừa thanh bình với những con rạch nhỏ, vườn cây xanh mát và cuộc sống miền quê gần gũi.",
+                PriceFrom = 0m,
+                ImageUrl = "/img/tours/bentre.jpg"
+            },
+            new()
+            {
+                Slug = "phan-thiet",
+                Name = "Phan Thiết",
+                Country = "Việt Nam",
+                Category = "Biển",
+                Description = "Vùng biển đầy nắng gió với đồi cát trải dài, làng chài bình dị và khung cảnh thiên nhiên đặc sắc.",
+                PriceFrom = 0m,
+                ImageUrl = "/img/tours/phanthiet.jpg"
+            }
+        };
+
+    public static readonly IReadOnlyList<TourPackageItem> Tours =
+        new List<TourPackageItem>
+        {
+            new() { Slug = "phu-quoc-3n2d", Name = "Phú Quốc 3N2Đ - Combo vé + khách sạn", Category = "Biển", Duration = "3 ngày 2 đêm", Rating = 4.9, Price = 3850000m, Description = "Trọn gói nghỉ dưỡng, xe đưa đón và lịch trình tham quan linh hoạt theo nhu cầu.", ImageUrl = "/img/tours/phuquoc.jpg" },
+            new() { Slug = "vung-tau-1-ngay", Name = "Vũng Tàu 1 ngày - Tắm biển", Category = "Biển", Duration = "1 ngày", Rating = 4.7, Price = 1050000m, Description = "Lựa chọn tiết kiệm thời gian, phù hợp đi cuối tuần cùng gia đình hoặc nhóm bạn.", ImageUrl = "/img/tours/vungtau.jpg" },
+            new() { Slug = "chau-doc-tra-su", Name = "Châu Đốc - Miếu Bà Chúa Xứ - Rừng Tràm Trà Sư", Category = "Văn hóa", Duration = "2 ngày 1 đêm", Rating = 4.8, Price = 890000m, Description = "Khám phá văn hóa bản địa, ẩm thực đặc sản và cảnh sắc thiên nhiên miền biên giới.", ImageUrl = "/img/tours/mientay.jpg" },
+            new() { Slug = "da-lat-san-may", Name = "Đà Lạt săn mây - Đồi thông", Category = "Nghỉ dưỡng", Duration = "3 ngày 2 đêm", Rating = 4.8, Price = 2990000m, Description = "Trải nghiệm không khí se lạnh, quán cà phê view đẹp và lịch trình nghỉ dưỡng nhẹ nhàng.", ImageUrl = "/img/tours/dalat1.jpg" },
+            new() { Slug = "can-tho-cho-noi", Name = "Cần Thơ - Chợ nổi Cái Răng", Category = "Văn hóa", Duration = "2 ngày 1 đêm", Rating = 4.7, Price = 1490000m, Description = "Đi thuyền chợ nổi, ăn sáng trên sông và ghé các làng nghề truyền thống đặc sắc.", ImageUrl = "/img/tours/cantho.jpg" },
+            new() { Slug = "sai-gon-mien-tay", Name = "Sài Gòn - Miền Tây trải nghiệm", Category = "Khám phá", Duration = "2 ngày 1 đêm", Rating = 4.6, Price = 1390000m, Description = "Kết hợp city tour Sài Gòn và hành trình miệt vườn để đổi gió chỉ trong 2 ngày.", ImageUrl = "/img/tours/saigon.jpg" }
+        };
+
+    public static readonly IReadOnlyList<GuidePostItem> GuidePosts =
+        new List<GuidePostItem>
+        {
+            new() { Slug = "phu-quoc-thoi-diem-dep", Title = "Thời điểm đẹp nhất để đi Phú Quốc", Summary = "Gợi ý mùa nắng đẹp, lịch trình 3N2Đ và các điểm check-in phù hợp từng nhóm khách.", DateLabel = "06/05/2026", ImageUrl = "/img/blog/blog1.jpg" },
+            new() { Slug = "an-gi-o-can-tho", Title = "Ăn gì ở Cần Thơ trong 24 giờ?", Summary = "Danh sách món ngon miền Tây dễ ăn, giá hợp lý và địa chỉ được khách HappyTrip đánh giá cao.", DateLabel = "28/04/2026", ImageUrl = "/img/blog/blog2.jpg" },
+            new() { Slug = "checklist-tour-3n2d", Title = "Checklist hành lý cho tour 3 ngày 2 đêm", Summary = "Chuẩn bị gọn nhẹ nhưng đầy đủ: trang phục, giấy tờ, phụ kiện và mẹo chống quên đồ.", DateLabel = "16/04/2026", ImageUrl = "/img/blog/blog3.jpg" }
+        };
+
+    public static readonly IReadOnlyList<TestimonialItem> Testimonials =
+        new List<TestimonialItem>
+        {
+            new() { Name = "Minh Anh", Title = "Tour gia đình Phú Quốc", Quote = "Lịch trình rõ ràng, xe đón đúng giờ, khách sạn sạch đẹp. Cả nhà đi rất thoải mái.", AvatarUrl = "/img/icons/user-1.png", Rating = 5 },
+            new() { Name = "Quốc Bảo", Title = "Tour nhóm Vũng Tàu", Quote = "Tư vấn nhanh, báo giá minh bạch, HDV nhiệt tình. Nhóm mình rất hài lòng.", AvatarUrl = "/img/icons/user-2.png", Rating = 5 },
+            new() { Name = "Ngọc Trâm", Title = "Tour Cần Thơ - Chợ nổi", Quote = "Đúng kiểu trải nghiệm miền Tây mình muốn, đồ ăn ngon và điểm tham quan hợp lý.", AvatarUrl = "/img/icons/user-3.png", Rating = 5 }
+        };
+
+    public static readonly IReadOnlyList<TeamMemberItem> TeamMembers =
+        new List<TeamMemberItem>
+        {
+            new() { Name = "Nguyễn Thảo My", Role = "Điều phối tour", Bio = "Chịu trách nhiệm tối ưu lịch trình, phối hợp vận hành và đảm bảo trải nghiệm trọn vẹn cho khách.", ImageUrl = "/img/icons/user.png" },
+            new() { Name = "Trần Quốc Đạt", Role = "Quản lý vận hành", Bio = "Theo sát từng khâu đặt dịch vụ, xe đưa đón và hỗ trợ xử lý nhanh trong suốt hành trình.", ImageUrl = "/img/icons/user-1.png" },
+            new() { Name = "Lê Hoàng Anh", Role = "Chuyên viên điểm đến", Bio = "Tư vấn tuyến tour phù hợp ngân sách, sở thích và mùa du lịch đẹp nhất của từng khu vực.", ImageUrl = "/img/icons/user-2.png" },
+            new() { Name = "Phạm Ngọc Trâm", Role = "Hướng dẫn viên trưởng", Bio = "Đồng hành cùng đoàn với phong cách thân thiện, nhiều kiến thức địa phương và xử lý tình huống tốt.", ImageUrl = "/img/icons/user-3.png" }
+        };
+
+    public static readonly IReadOnlyList<StatItem> AboutStats =
+        new List<StatItem>
+        {
+            new() { Value = "10K+", Label = "Khách đã phục vụ" },
+            new() { Value = "50+", Label = "Điểm đến nội địa" },
+            new() { Value = "120+", Label = "Lịch trình đã thiết kế" },
+            new() { Value = "4.9", Label = "Điểm đánh giá trung bình" }
+        };
+
+    public static IReadOnlyList<DestinationItem> GetDestinations(string? filter)
+    {
+        if (string.IsNullOrWhiteSpace(filter) || filter.Equals(AllDestinationsFilter, StringComparison.OrdinalIgnoreCase))
+        {
+            return Destinations;
+        }
+
+        return Destinations
+            .Where(x => x.Category.Equals(filter, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    public static IReadOnlyList<TourPackageItem> GetTours(string? filter)
+    {
+        if (string.IsNullOrWhiteSpace(filter) || filter.Equals(AllToursFilter, StringComparison.OrdinalIgnoreCase))
+        {
+            return Tours;
+        }
+
+        return Tours
+            .Where(x => x.Category.Equals(filter, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    public static DestinationItem? GetDestinationBySlug(string slug)
+    {
+        return Destinations.FirstOrDefault(
+            x => x.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public static TourPackageItem? GetTourBySlug(string slug)
+    {
+        return Tours.FirstOrDefault(
+            x => x.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public static IReadOnlyList<DestinationItem> GetRelatedDestinations(string currentSlug, int take = 3)
+    {
+        return Destinations
+            .Where(x => !x.Slug.Equals(currentSlug, StringComparison.OrdinalIgnoreCase))
+            .Take(take)
+            .ToList();
+    }
+
+    public static IReadOnlyList<TourPackageItem> GetRelatedTours(string currentSlug, int take = 3)
+    {
+        return Tours
+            .Where(x => !x.Slug.Equals(currentSlug, StringComparison.OrdinalIgnoreCase))
+            .Take(take)
+            .ToList();
+    }
+}
+
+
+========== \Data\Models\ApplicationDbContext.cs ==========
+using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+public partial class ApplicationDbContext : DbContext
+{
+    public ApplicationDbContext()
+    {
+    }
+
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+    {
+    }
+
+    public virtual DbSet<BaiViet> BaiViets { get; set; }
+
+    public virtual DbSet<BinhLuanTour> BinhLuanTours { get; set; }
+
+    public virtual DbSet<ChuyenMucBaiViet> ChuyenMucBaiViets { get; set; }
+
+    public virtual DbSet<DonDatTour> DonDatTours { get; set; }
+
+    public virtual DbSet<PhieuGiamGia> PhieuGiamGias { get; set; }
+
+    public virtual DbSet<PhieuGiamGiaTaiKhoan> PhieuGiamGiaTaiKhoans { get; set; }
+
+    public virtual DbSet<PhieuGiamGiaSuDung> PhieuGiamGiaSuDungs { get; set; }
+
+    public virtual DbSet<HinhTour> HinhTours { get; set; }
+
+    public virtual DbSet<LichKhoiHanh> LichKhoiHanhs { get; set; }
+
+    public virtual DbSet<LienHe> LienHes { get; set; }
+
+    public virtual DbSet<LoaiTour> LoaiTours { get; set; }
+
+    public virtual DbSet<TaiKhoan> TaiKhoans { get; set; }
+
+    public virtual DbSet<ThongBao> ThongBaos { get; set; }
+
+    public virtual DbSet<Tour> Tours { get; set; }
+
+    public virtual DbSet<TourGiaChiTiet> TourGiaChiTiets { get; set; }
+
+    public virtual DbSet<WishlistTour> WishlistTours { get; set; }
+
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<BaiViet>(entity =>
+        {
+            entity.HasKey(e => e.IdBaiViet).HasName("PK__BaiViet__42161C7A768D7ED0");
+
+            entity.Property(e => e.NgayDang).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.TrangThai).HasDefaultValue(true);
+
+            entity.HasOne(d => d.IdCMNavigation).WithMany(p => p.BaiViets)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BV_CM");
+        });
+
+        modelBuilder.Entity<BinhLuanTour>(entity =>
+        {
+            entity.HasKey(e => e.IdBL);
+
+            entity.Property(e => e.HienThi).HasDefaultValue(true);
+            entity.Property(e => e.NgayBL).HasDefaultValueSql("(getdate())");
+
+            // ✅ Bình luận - Tour
+            entity.HasOne(d => d.IdTourNavigation)
+                .WithMany(p => p.BinhLuanTours)
+                .HasForeignKey(d => d.IdTour)
+                .HasConstraintName("FK_BL_Tour");
+
+            // ✅ Bình luận - Bài viết (QUAN TRỌNG NHẤT)
+            entity.HasOne(d => d.IdBaiVietNavigation)
+                .WithMany(p => p.BinhLuanTours) // ✅ PHẢI TRÙNG Model BaiViet
+                .HasForeignKey(d => d.IdBaiViet)
+                .HasConstraintName("FK_BL_BaiViet");
+
+            // ✅ Bình luận - Tài khoản
+            entity.HasOne(d => d.IdTaiKhoanNavigation)
+                .WithMany()
+                .HasForeignKey(d => d.IdTaiKhoan)
+                .HasConstraintName("FK_BL_TaiKhoan");
+        });
+
+
+        modelBuilder.Entity<ChuyenMucBaiViet>(entity =>
+        {
+            entity.HasKey(e => e.IdCM).HasName("PK__ChuyenMu__B773908EED1AE3C1");
+            entity.Property(e => e.TrangThai).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<DonDatTour>(entity =>
+        {
+            entity.HasKey(e => e.IdDon).HasName("PK__DonDatTo__0E65F8ECE406AC64");
+
+            entity.ToTable("DonDatTour", tb =>
+                {
+                    tb.HasTrigger("Trg_DonDat_AfterInsert");
+                    tb.HasTrigger("Trg_DonDat_AfterUpdate");
+                    tb.HasTrigger("Trg_DonDat_Overbook");
+                });
+
+            entity.Property(e => e.MaBooking).HasDefaultValueSql("(('BPT'+CONVERT([char](6),getdate(),(12)))+right('0000'+CONVERT([varchar](4),NEXT VALUE FOR [dbo].[SeqBooking]),(4)))");
+            entity.Property(e => e.NgayDat).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.TrangThai).HasDefaultValue("Đã đặt");
+
+            entity.HasOne(d => d.IdLichNavigation).WithMany(p => p.DonDatTours)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Don_Lich");
+
+            entity.HasOne(d => d.IdTaiKhoanNavigation).WithMany(p => p.DonDatTours)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Don_TK");
+
+            entity.HasOne(d => d.IdTourNavigation).WithMany(p => p.DonDatTours)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Don_Tour");
+
+            entity.HasOne(d => d.IdPhieuGiamGiaNavigation).WithMany(p => p.DonDatTours)
+                .HasForeignKey(d => d.IdPhieuGiamGia)
+                .HasConstraintName("FK_Don_PhieuGiamGia");
+        });
+
+        modelBuilder.Entity<PhieuGiamGia>(entity =>
+        {
+            entity.HasKey(e => e.IdPhieuGiamGia).HasName("PK_PhieuGiamGia");
+
+            entity.Property(e => e.DaSuDung).HasDefaultValue(0);
+            entity.Property(e => e.DonToiThieu).HasDefaultValue(0);
+            entity.Property(e => e.LoaiGiam).HasDefaultValue("PhanTram");
+            entity.Property(e => e.NgayTao).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.PhamViApDung).HasDefaultValue("TatCa");
+            entity.Property(e => e.TrangThai).HasDefaultValue(true);
+
+            entity.HasOne(d => d.IdTourNavigation).WithMany(p => p.PhieuGiamGias)
+                .HasForeignKey(d => d.IdTour)
+                .HasConstraintName("FK_PGG_Tour");
+
+            entity.HasOne(d => d.IdLoaiTourNavigation).WithMany(p => p.PhieuGiamGias)
+                .HasForeignKey(d => d.IdLoaiTour)
+                .HasConstraintName("FK_PGG_LoaiTour");
+        });
+
+        modelBuilder.Entity<PhieuGiamGiaTaiKhoan>(entity =>
+        {
+            entity.HasKey(e => e.IdLuu).HasName("PK_PhieuGiamGiaTaiKhoan");
+
+            entity.Property(e => e.NgayLuu).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.TrangThai).HasDefaultValue(true);
+
+            entity.HasOne(d => d.IdPhieuGiamGiaNavigation).WithMany(p => p.PhieuGiamGiaTaiKhoans)
+                .HasForeignKey(d => d.IdPhieuGiamGia)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PGGTK_PGG");
+
+            entity.HasOne(d => d.IdTaiKhoanNavigation).WithMany(p => p.PhieuGiamGiaTaiKhoans)
+                .HasForeignKey(d => d.IdTaiKhoan)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PGGTK_TK");
+        });
+
+        modelBuilder.Entity<PhieuGiamGiaSuDung>(entity =>
+        {
+            entity.HasKey(e => e.IdSuDung).HasName("PK_PhieuGiamGiaSuDung");
+
+            entity.Property(e => e.ThoiDiemSuDung).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.TrangThai).HasDefaultValue("GiuCho");
+
+            entity.HasOne(d => d.IdPhieuGiamGiaNavigation).WithMany(p => p.PhieuGiamGiaSuDungs)
+                .HasForeignKey(d => d.IdPhieuGiamGia)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PGGSD_PGG");
+
+            entity.HasOne(d => d.IdDonNavigation).WithMany(p => p.PhieuGiamGiaSuDungs)
+                .HasForeignKey(d => d.IdDon)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PGGSD_Don");
+
+            entity.HasOne(d => d.IdTaiKhoanNavigation).WithMany(p => p.PhieuGiamGiaSuDungs)
+                .HasForeignKey(d => d.IdTaiKhoan)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PGGSD_TaiKhoan");
+        });
+
+        modelBuilder.Entity<HinhTour>(entity =>
+        {
+            entity.HasKey(e => e.IdHinh).HasName("PK__HinhTour__50E95053ED5032E9");
+
+            entity.HasOne(d => d.IdTourNavigation).WithMany(p => p.HinhTours)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Hinh_Tour");
+        });
+
+        modelBuilder.Entity<LichKhoiHanh>(entity =>
+        {
+            entity.HasKey(e => e.IdLich).HasName("PK__LichKhoi__31D90F9E140D933B");
+
+            // ✅ KHAI BÁO TẤT CẢ TRIGGER CỦA BẢNG
+            entity.ToTable("LichKhoiHanh", tb =>
+            {
+                tb.HasTrigger("TRG_KhongChoSuaLichDaCoDon");
+                tb.HasTrigger("TRG_KhongChoXoaLichDaCoDon");
+                tb.HasTrigger("TRG_UpdateTrangThaiLich");
+            });
+
+            entity.Property(e => e.TrangThai)
+                .HasDefaultValue("Đang mở");
+
+            entity.HasOne(d => d.IdTourNavigation)
+                .WithMany(p => p.LichKhoiHanhs)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Lich_Tour");
+        });
+
+        modelBuilder.Entity<LienHe>(entity =>
+        {
+            entity.HasKey(e => e.IdLienHe).HasName("PK__LienHe__03AC912A9937FC66");
+
+            entity.Property(e => e.NgayGui).HasDefaultValueSql("(getdate())");
+        });
+
+        modelBuilder.Entity<LoaiTour>(entity =>
+        {
+            entity.HasKey(e => e.IdLoaiTour).HasName("PK__LoaiTour__E5093BFE7C724882");
+        });
+
+        modelBuilder.Entity<TaiKhoan>(entity =>
+        {
+            entity.HasKey(e => e.IdTaiKhoan).HasName("PK__TaiKhoan__9A53D3DD7FFA2B72");
+
+            entity.Property(e => e.NgayTao).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.TrangThai).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<ThongBao>(entity =>
+        {
+            entity.HasKey(e => e.IdThongBao).HasName("PK__ThongBao__43FDD6C82DED7477");
+
+            entity.Property(e => e.NgayTao).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.TieuDe).HasDefaultValue("");
+
+            entity.HasOne(d => d.IdDonNavigation).WithMany(p => p.ThongBaos).HasConstraintName("FK_TB_Don");
+        });
+
+        modelBuilder.Entity<Tour>(entity =>
+        {
+            entity.HasKey(e => e.IdTour).HasName("PK__Tour__860C736F4B0DB621");
+
+            entity.Property(e => e.TrangThai).HasDefaultValue(true);
+
+            entity.HasOne(d => d.IdLoaiTourNavigation).WithMany(p => p.Tours)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Tour_LoaiTour");
+        });
+
+        modelBuilder.Entity<TourGiaChiTiet>(entity =>
+        {
+            entity.HasKey(e => e.IdGia).HasName("PK__TourGiaC__0C9FA30AF4F8A895");
+
+            entity.HasOne(d => d.IdTourNavigation).WithMany(p => p.TourGiaChiTiets)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Gia_Tour");
+        });
+
+        modelBuilder.Entity<WishlistTour>(entity =>
+        {
+            entity.HasKey(e => e.IdWishlist).HasName("PK_WishlistTour");
+            entity.Property(e => e.NgayTao).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.IdTaiKhoanNavigation).WithMany(p => p.WishlistTours)
+                .HasForeignKey(d => d.IdTaiKhoan)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Wishlist_TaiKhoan");
+
+            entity.HasOne(d => d.IdTourNavigation).WithMany(p => p.WishlistTours)
+                .HasForeignKey(d => d.IdTour)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Wishlist_Tour");
+        });
+        modelBuilder.HasSequence<int>("SeqBooking");
+
+        OnModelCreatingPartial(modelBuilder);
+    }
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+}
+
+
+========== \Data\Models\BaiViet.cs ==========
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("BaiViet")]
+public partial class BaiViet
+{
+    [Key]
+    public int IdBaiViet { get; set; }
+
+    public int IdCM { get; set; }
+
+    public int IdTaiKhoan { get; set; } 
+
+    [StringLength(255)]
+    public string TieuDe { get; set; } = null!;
+
+    public string NoiDung { get; set; } = null!;
+
+    [StringLength(255)]
+    public string? HinhAnh { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime NgayDang { get; set; }
+
+    public bool TrangThai { get; set; }
+
+    [StringLength(100)]
+    public string? TacGia { get; set; }
+
+    [ForeignKey("IdTaiKhoan")]
+    public virtual TaiKhoan? IdTaiKhoanNavigation { get; set; }
+
+    [ForeignKey("IdCM")]
+    [InverseProperty("BaiViets")]
+    public virtual ChuyenMucBaiViet IdCMNavigation { get; set; } = null!;
+
+    [InverseProperty("IdBaiVietNavigation")]
+    public virtual ICollection<BinhLuanTour> BinhLuanTours { get; set; } = new List<BinhLuanTour>();
+}
+
+
+========== \Data\Models\BinhLuanTour.cs ==========
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("BinhLuanTour")]
+public partial class BinhLuanTour
+{
+    [Key]
+    public int IdBL { get; set; }
+
+    public int? IdTour { get; set; }
+    public int? IdBaiViet { get; set; }
+    public int? IdTaiKhoan { get; set; }
+
+    [StringLength(100)]
+    public string Ten { get; set; } = null!;
+
+    [StringLength(100)]
+    public string? Email { get; set; }
+
+    [StringLength(20)]
+    public string? DienThoai { get; set; }
+
+    public string NoiDung { get; set; } = null!;
+
+    [Column(TypeName = "datetime")]
+    public DateTime NgayBL { get; set; }
+
+    public string? PhanHoiAdm { get; set; }
+
+    public bool HienThi { get; set; }
+
+    // --- Navigation đúng chuẩn SQL & DbContext ---
+    [ForeignKey("IdTour")]
+    [InverseProperty("BinhLuanTours")]
+    public virtual Tour? IdTourNavigation { get; set; }
+
+    [ForeignKey("IdBaiViet")]
+    [InverseProperty("BinhLuanTours")]
+    public virtual BaiViet? IdBaiVietNavigation { get; set; }
+  
+    [ForeignKey("IdTaiKhoan")]
+    public virtual TaiKhoan? IdTaiKhoanNavigation { get; set; }
+}
+
+
+========== \Data\Models\ChuyenMucBaiViet.cs ==========
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("ChuyenMucBaiViet")]
+public partial class ChuyenMucBaiViet
+{
+    [Key]
+    public int IdCM { get; set; }
+
+    [StringLength(100)]
+    public string TenCM { get; set; } = null!;
+
+     [StringLength(255)]
+    public string? MoTa { get; set; }
+
+     public bool TrangThai { get; set; } = true;
+
+    [InverseProperty("IdCMNavigation")]
+    public virtual ICollection<BaiViet> BaiViets { get; set; } = new List<BaiViet>();
+}
+
+
+========== \Data\Models\DonDatTour.cs ==========
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("DonDatTour")]
+[Index("TrangThai", Name = "IX_Don_TrangThai")]
+[Index("MaBooking", Name = "UX_Don_MaBooking", IsUnique = true)]
+public partial class DonDatTour
+{
+    [Key]
+    public int IdDon { get; set; }
+
+    [StringLength(20)]
+    public string MaBooking { get; set; } = null!;
+
+    public int IdTaiKhoan { get; set; }
+
+    public int IdTour { get; set; }
+
+    public int IdLich { get; set; }
+
+    public int? IdPhieuGiamGia { get; set; }
+
+    public int NguoiLon { get; set; }
+
+    public int TreEm { get; set; }
+
+    public int TreNho { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime NgayDat { get; set; }
+
+    [Column(TypeName = "decimal(18, 0)")]
+    public decimal TongTien { get; set; }
+
+    [StringLength(50)]
+    public string? MaPhieuGiamGia { get; set; }
+
+    [Column(TypeName = "decimal(18, 0)")]
+    public decimal? SoTienGiam { get; set; }
+
+    [Column(TypeName = "decimal(18, 0)")]
+    public decimal? TongTienSauGiam { get; set; }
+
+    [StringLength(30)]
+    public string TrangThai { get; set; } = null!;
+
+    public string? GhiChu { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime? NgayHuy { get; set; }
+
+    public bool DaThanhToan { get; set; } = false;
+    public string? TrangThaiThanhToan { get; set; }
+    public string? MaGiaoDich { get; set; }
+    public DateTime? NgayThanhToan { get; set; }
+    public DateTime? HanThanhToan { get; set; }
+    public string? PhuongThucTT { get; set; }
+
+    [ForeignKey("IdLich")]
+    [InverseProperty("DonDatTours")]
+    public virtual LichKhoiHanh IdLichNavigation { get; set; } = null!;
+
+    [ForeignKey("IdPhieuGiamGia")]
+    [InverseProperty("DonDatTours")]
+    public virtual PhieuGiamGia? IdPhieuGiamGiaNavigation { get; set; }
+
+    [ForeignKey("IdTaiKhoan")]
+    [InverseProperty("DonDatTours")]
+    public virtual TaiKhoan IdTaiKhoanNavigation { get; set; } = null!;
+
+    [ForeignKey("IdTour")]
+    [InverseProperty("DonDatTours")]
+    public virtual Tour IdTourNavigation { get; set; } = null!;
+
+    [InverseProperty("IdDonNavigation")]
+    public virtual ICollection<ThongBao> ThongBaos { get; set; } = new List<ThongBao>();
+
+    [InverseProperty("IdDonNavigation")]
+    public virtual ICollection<PhieuGiamGiaSuDung> PhieuGiamGiaSuDungs { get; set; } = new List<PhieuGiamGiaSuDung>();
+}
+
+
+========== \Data\Models\HinhTour.cs ==========
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("HinhTour")]
+public partial class HinhTour
+{
+    [Key]
+    public int IdHinh { get; set; }
+
+    public int IdTour { get; set; }
+
+    [StringLength(255)]
+    public string UrlHinh { get; set; } = null!;
+
+    [StringLength(255)]
+    public string? MoTa { get; set; }
+
+    public int? ThuTu { get; set; }
+
+    [ForeignKey("IdTour")]
+    [InverseProperty("HinhTours")]
+    public virtual Tour IdTourNavigation { get; set; } = null!;
+}
+
+
+========== \Data\Models\LichKhoiHanh.cs ==========
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("LichKhoiHanh")]
+[Index("IdTour", "NgayKhoiHanh", Name = "UX_Lich_TourDate", IsUnique = true)]
+public partial class LichKhoiHanh
+{
+    [Key]
+    public int IdLich { get; set; }
+
+    public int IdTour { get; set; }
+
+    public DateOnly NgayKhoiHanh { get; set; }
+
+    [Precision(0)]
+    public TimeOnly? GioKhoiHanh { get; set; }
+
+    public int SoChoToiDa { get; set; }
+
+    public int SoChoConLai { get; set; }
+
+    [StringLength(20)]
+    public string TrangThai { get; set; } = null!;
+
+    [InverseProperty("IdLichNavigation")]
+    public virtual ICollection<DonDatTour> DonDatTours { get; set; } = new List<DonDatTour>();
+
+    [ForeignKey("IdTour")]
+    [InverseProperty("LichKhoiHanhs")]
+    public virtual Tour IdTourNavigation { get; set; } = null!;
+}
+
+
+========== \Data\Models\LienHe.cs ==========
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace TourWebApp.Data.Models;
+
+[Table("LienHe")]
+public partial class LienHe
+{
+    [Key]
+    public int IdLienHe { get; set; }
+
+    [Required]
+    [StringLength(100)]
+    public string HoTen { get; set; } = null!;
+
+    [Required]
+    [StringLength(100)]
+    public string Email { get; set; } = null!;
+
+    [StringLength(20)]
+    public string? DienThoai { get; set; }
+
+    [Required]
+    public string NoiDung { get; set; } = null!;
+
+    [Column(TypeName = "datetime")]
+    public DateTime NgayGui { get; set; }
+
+    // Trang thai xu ly yeu cau tu van
+    [Required]
+    [StringLength(30)]
+    public string TrangThai { get; set; } = "Chưa phản hồi";
+
+    // Noi dung Admin phan hoi khach hang
+    public string? NoiDungPhanHoi { get; set; }
+
+    // Thoi gian Admin gui phan hoi
+    [Column(TypeName = "datetime")]
+    public DateTime? NgayPhanHoi { get; set; }
+}
+
+
+========== \Data\Models\LoaiTour.cs ==========
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("LoaiTour")]
+public partial class LoaiTour
+{
+    [Key]
+    public int IdLoaiTour { get; set; }
+
+    [StringLength(100)]
+    public string TenLoai { get; set; } = null!;
+
+    public string? MoTa { get; set; }
+
+    [InverseProperty("IdLoaiTourNavigation")]
+    public virtual ICollection<Tour> Tours { get; set; } = new List<Tour>();
+
+    [InverseProperty("IdLoaiTourNavigation")]
+    public virtual ICollection<PhieuGiamGia> PhieuGiamGias { get; set; } = new List<PhieuGiamGia>();
+}
+
+
+========== \Data\Models\PhieuGiamGia.cs ==========
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("PhieuGiamGia")]
+[Index("MaPhieu", Name = "UX_PhieuGiamGia_Ma", IsUnique = true)]
+[Index("TrangThai", Name = "IX_PhieuGiamGia_TrangThai")]
+public partial class PhieuGiamGia
+{
+    [Key]
+    public int IdPhieuGiamGia { get; set; }
+
+    [StringLength(50)]
+    public string MaPhieu { get; set; } = null!;
+
+    [StringLength(200)]
+    public string TenPhieu { get; set; } = null!;
+
+    [StringLength(20)]
+    public string LoaiGiam { get; set; } = "PhanTram";
+
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal GiaTriGiam { get; set; }
+
+    [Column(TypeName = "decimal(18, 0)")]
+    public decimal DonToiThieu { get; set; }
+
+    [Column(TypeName = "decimal(18, 0)")]
+    public decimal? GiamToiDa { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime? NgayBatDau { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime? NgayKetThuc { get; set; }
+
+    public int? TongLuotSuDung { get; set; }
+
+    public int DaSuDung { get; set; }
+
+    public int? LuotToiDaMoiTaiKhoan { get; set; }
+
+    [StringLength(20)]
+    public string PhamViApDung { get; set; } = "TatCa";
+
+    public int? IdTour { get; set; }
+
+    public int? IdLoaiTour { get; set; }
+
+    public bool TrangThai { get; set; }
+
+    [StringLength(500)]
+    public string? MoTa { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime NgayTao { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime? NgayCapNhat { get; set; }
+
+    [ForeignKey("IdTour")]
+    [InverseProperty("PhieuGiamGias")]
+    public virtual Tour? IdTourNavigation { get; set; }
+
+    [ForeignKey("IdLoaiTour")]
+    [InverseProperty("PhieuGiamGias")]
+    public virtual LoaiTour? IdLoaiTourNavigation { get; set; }
+
+    [InverseProperty("IdPhieuGiamGiaNavigation")]
+    public virtual ICollection<DonDatTour> DonDatTours { get; set; } = new List<DonDatTour>();
+
+    [InverseProperty("IdPhieuGiamGiaNavigation")]
+    public virtual ICollection<PhieuGiamGiaSuDung> PhieuGiamGiaSuDungs { get; set; } = new List<PhieuGiamGiaSuDung>();
+
+    [InverseProperty("IdPhieuGiamGiaNavigation")]
+    public virtual ICollection<PhieuGiamGiaTaiKhoan> PhieuGiamGiaTaiKhoans { get; set; } = new List<PhieuGiamGiaTaiKhoan>();
+}
+
+
+========== \Data\Models\PhieuGiamGiaSuDung.cs ==========
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace TourWebApp.Data.Models;
+
+[Table("PhieuGiamGiaSuDung")]
+public partial class PhieuGiamGiaSuDung
+{
+    [Key]
+    public int IdSuDung { get; set; }
+
+    public int IdPhieuGiamGia { get; set; }
+
+    public int IdDon { get; set; }
+
+    public int IdTaiKhoan { get; set; }
+
+    [StringLength(50)]
+    public string MaPhieu { get; set; } = null!;
+
+    [Column(TypeName = "decimal(18, 0)")]
+    public decimal SoTienGiam { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime ThoiDiemSuDung { get; set; }
+
+    [StringLength(20)]
+    public string TrangThai { get; set; } = "GiuCho";
+
+    [StringLength(500)]
+    public string? GhiChu { get; set; }
+
+    [ForeignKey("IdPhieuGiamGia")]
+    [InverseProperty("PhieuGiamGiaSuDungs")]
+    public virtual PhieuGiamGia IdPhieuGiamGiaNavigation { get; set; } = null!;
+
+    [ForeignKey("IdDon")]
+    [InverseProperty("PhieuGiamGiaSuDungs")]
+    public virtual DonDatTour IdDonNavigation { get; set; } = null!;
+
+    [ForeignKey("IdTaiKhoan")]
+    [InverseProperty("PhieuGiamGiaSuDungs")]
+    public virtual TaiKhoan IdTaiKhoanNavigation { get; set; } = null!;
+}
+
+
+========== \Data\Models\PhieuGiamGiaTaiKhoan.cs ==========
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("PhieuGiamGiaTaiKhoan")]
+[Index("IdTaiKhoan", "IdPhieuGiamGia", Name = "UX_PGGTK_UserVoucher", IsUnique = true)]
+[Index("IdTaiKhoan", Name = "IX_PGGTK_User")]
+public partial class PhieuGiamGiaTaiKhoan
+{
+    [Key]
+    public int IdLuu { get; set; }
+
+    public int IdTaiKhoan { get; set; }
+
+    public int IdPhieuGiamGia { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime NgayLuu { get; set; }
+
+    public bool TrangThai { get; set; }
+
+    [ForeignKey("IdPhieuGiamGia")]
+    [InverseProperty("PhieuGiamGiaTaiKhoans")]
+    public virtual PhieuGiamGia IdPhieuGiamGiaNavigation { get; set; } = null!;
+
+    [ForeignKey("IdTaiKhoan")]
+    [InverseProperty("PhieuGiamGiaTaiKhoans")]
+    public virtual TaiKhoan IdTaiKhoanNavigation { get; set; } = null!;
+}
+
+
+========== \Data\Models\TaiKhoan.cs ==========
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("TaiKhoan")]
+[Index("Email", Name = "UQ__TaiKhoan__A9D1053436F203C5", IsUnique = true)]
+public partial class TaiKhoan
+{
+    [Key]
+    public int IdTaiKhoan { get; set; }
+
+    [StringLength(100)]
+    public string HoTen { get; set; } = null!;
+
+    [StringLength(100)]
+    public string Email { get; set; } = null!;
+
+    [StringLength(255)]
+    public string MatKhau { get; set; } = null!;
+
+    [StringLength(15)]
+    public string? SoDienThoai { get; set; }
+
+    [StringLength(255)]
+    public string? DiaChi { get; set; }
+
+    [StringLength(20)]
+    public string VaiTro { get; set; } = null!;
+
+    public bool TrangThai { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime NgayTao { get; set; }
+
+    [InverseProperty("IdTaiKhoanNavigation")]
+    public virtual ICollection<DonDatTour> DonDatTours { get; set; } = new List<DonDatTour>();
+
+    [InverseProperty("IdTaiKhoanNavigation")]
+    public virtual ICollection<PhieuGiamGiaSuDung> PhieuGiamGiaSuDungs { get; set; } = new List<PhieuGiamGiaSuDung>();
+
+    [InverseProperty("IdTaiKhoanNavigation")]
+    public virtual ICollection<PhieuGiamGiaTaiKhoan> PhieuGiamGiaTaiKhoans { get; set; } = new List<PhieuGiamGiaTaiKhoan>();
+
+    [InverseProperty("IdTaiKhoanNavigation")]
+    public virtual ICollection<WishlistTour> WishlistTours { get; set; } = new List<WishlistTour>();
+}
+
+
+========== \Data\Models\ThongBao.cs ==========
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("ThongBao")]
+public partial class ThongBao
+{
+    [Key]
+    public int IdThongBao { get; set; }
+
+    public int? IdDon { get; set; }
+
+    public string NoiDung { get; set; } = null!;
+
+    [Column(TypeName = "datetime")]
+    public DateTime NgayTao { get; set; }
+
+    public bool DaDoc { get; set; }
+
+    public int IdNguoiNhan { get; set; }
+
+    [StringLength(200)]
+    public string TieuDe { get; set; } = null!;
+
+    [StringLength(255)]
+    public string? LienKet { get; set; }
+
+    [ForeignKey("IdDon")]
+    [InverseProperty("ThongBaos")]
+    public virtual DonDatTour? IdDonNavigation { get; set; }
+}
+
+
+========== \Data\Models\Tour.cs ==========
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("Tour")]
+[Index("IdLoaiTour", Name = "IX_Tour_Loai")]
+[Index("MaTour", Name = "UX_Tour_Ma", IsUnique = true)]
+public partial class Tour
+{
+    [Key]
+    public int IdTour { get; set; }
+
+    [StringLength(50)]
+    public string MaTour { get; set; } = null!;
+
+    [StringLength(200)]
+    public string TenTour { get; set; } = null!;
+
+    [StringLength(200)]
+    public string? DiaDiem { get; set; }
+
+    [StringLength(50)]
+    public string? ThoiGian { get; set; }
+
+    [StringLength(100)]
+    public string? LichKhoiHanhMoTa { get; set; }
+
+    [StringLength(50)]
+    public string? PhuongTien { get; set; }
+
+    [Column(TypeName = "decimal(18, 0)")]
+    public decimal? GiaGoc { get; set; }
+
+    [Column(TypeName = "decimal(18, 0)")]
+    public decimal? GiaKhuyenMai { get; set; }
+
+    public int? PhanTramGiam { get; set; }
+
+    [StringLength(255)]
+    public string? HinhAnh { get; set; }
+
+    public string? MoTa { get; set; }
+
+    public int LuotXem { get; set; }
+
+    public int SoNguoiDaDat { get; set; }
+
+    public int IdLoaiTour { get; set; }
+
+    public bool TrangThai { get; set; }
+
+    [InverseProperty("IdTourNavigation")]
+    public virtual ICollection<BinhLuanTour> BinhLuanTours { get; set; } = new List<BinhLuanTour>();
+
+    [InverseProperty("IdTourNavigation")]
+    public virtual ICollection<DonDatTour> DonDatTours { get; set; } = new List<DonDatTour>();
+
+    [InverseProperty("IdTourNavigation")]
+    public virtual ICollection<HinhTour> HinhTours { get; set; } = new List<HinhTour>();
+
+    [ForeignKey("IdLoaiTour")]
+    [InverseProperty("Tours")]
+    public virtual LoaiTour? IdLoaiTourNavigation { get; set; }
+
+
+    [InverseProperty("IdTourNavigation")]
+    public virtual ICollection<LichKhoiHanh> LichKhoiHanhs { get; set; } = new List<LichKhoiHanh>();
+
+    [InverseProperty("IdTourNavigation")]
+    public virtual ICollection<TourGiaChiTiet> TourGiaChiTiets { get; set; } = new List<TourGiaChiTiet>();
+
+    [InverseProperty("IdTourNavigation")]
+    public virtual ICollection<PhieuGiamGia> PhieuGiamGias { get; set; } = new List<PhieuGiamGia>();
+
+    [InverseProperty("IdTourNavigation")]
+    public virtual ICollection<WishlistTour> WishlistTours { get; set; } = new List<WishlistTour>();
+}
+
+
+========== \Data\Models\TourGiaChiTiet.cs ==========
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("TourGiaChiTiet")]
+[Index("IdTour", "DoiTuong", Name = "UX_Gia_Tour_DoiTuong", IsUnique = true)]
+public partial class TourGiaChiTiet
+{
+    [Key]
+    public int IdGia { get; set; }
+
+    public int IdTour { get; set; }
+
+    [StringLength(20)]
+    public string DoiTuong { get; set; } = null!;
+
+    [Column(TypeName = "decimal(18, 0)")]
+    public decimal Gia { get; set; }
+
+    [StringLength(200)]
+    public string? GhiChu { get; set; }
+
+    [ForeignKey("IdTour")]
+    [InverseProperty("TourGiaChiTiets")]
+    public virtual Tour IdTourNavigation { get; set; } = null!;
+}
+
+
+========== \Data\Models\TourPriceAudience.cs ==========
+namespace TourWebApp.Data.Models;
+
+public static class TourPriceAudience
+{
+    public const string Adult = "NguoiLon";
+    public const string Child = "TreEm";
+    public const string Infant = "TreNho";
+
+    private const string LegacyAdult = "Người lớn";
+    private const string LegacyChild = "Trẻ em";
+    private const string LegacyInfant = "Em bé";
+
+    public static bool IsAdult(string? value) => Matches(value, Adult, LegacyAdult);
+
+    public static bool IsChild(string? value) => Matches(value, Child, LegacyChild);
+
+    public static bool IsInfant(string? value) => Matches(value, Infant, LegacyInfant);
+
+    public static string GetDisplayName(string? value)
+    {
+        if (IsAdult(value)) return LegacyAdult;
+        if (IsChild(value)) return LegacyChild;
+        if (IsInfant(value)) return LegacyInfant;
+        return value ?? string.Empty;
+    }
+
+    private static bool Matches(string? value, string code, string legacyValue) =>
+        string.Equals(value, code, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(value, legacyValue, StringComparison.OrdinalIgnoreCase);
+}
+
+
+========== \Data\Models\WishlistTour.cs ==========
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace TourWebApp.Data.Models;
+
+[Table("WishlistTour")]
+[Index(nameof(IdTaiKhoan), nameof(IdTour), Name = "UX_WishlistTour_UserTour", IsUnique = true)]
+public class WishlistTour
+{
+    [Key]
+    public int IdWishlist { get; set; }
+
+    public int IdTaiKhoan { get; set; }
+
+    public int IdTour { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime NgayTao { get; set; }
+
+    [ForeignKey(nameof(IdTaiKhoan))]
+    public virtual TaiKhoan IdTaiKhoanNavigation { get; set; } = null!;
+
+    [ForeignKey(nameof(IdTour))]
+    public virtual Tour IdTourNavigation { get; set; } = null!;
+}
+
+========== \Helpers\TourImagePathHelper.cs ==========
+namespace TourWebApp.Helpers;
+
+public static class TourImagePathHelper
+{
+    private const string TourImageWebFolder = "/img/tours/";
+
+    public static string NormalizeTourImagePath(string? imagePath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return string.Empty;
+
+        var path = imagePath.Trim().Replace('\\', '/');
+
+        var webRootMarker = "/wwwroot/img/tours/";
+        var webRootIndex = path.IndexOf(webRootMarker, StringComparison.OrdinalIgnoreCase);
+        if (webRootIndex >= 0)
+            path = path[(webRootIndex + webRootMarker.Length)..];
+
+        if (path.StartsWith("~", StringComparison.Ordinal))
+            path = path[1..];
+
+        path = path.TrimStart('/');
+
+        if (path.StartsWith("wwwroot/", StringComparison.OrdinalIgnoreCase))
+            path = path["wwwroot/".Length..];
+
+        if (path.StartsWith("img/tours/", StringComparison.OrdinalIgnoreCase))
+            path = path["img/tours/".Length..];
+
+        return path.TrimStart('/');
+    }
+
+    public static string ToTourImageSrc(string? imagePath, string fallback = "vungtau.jpg")
+    {
+        if (!string.IsNullOrWhiteSpace(imagePath)
+            && (imagePath.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                || imagePath.StartsWith("https://", StringComparison.OrdinalIgnoreCase)))
+        {
+            return imagePath;
+        }
+
+        var normalized = NormalizeTourImagePath(imagePath);
+        if (string.IsNullOrWhiteSpace(normalized))
+            normalized = fallback;
+
+        return TourImageWebFolder + normalized;
+    }
+}
+
+

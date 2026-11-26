@@ -1,0 +1,2317 @@
+﻿@model List<TourWebApp.Data.Models.Tour>
+@using TourWebApp.Data.Models
+@using TourWebApp.Helpers
+
+@{
+    ViewData["Title"] = "Khám phá tour | HappyTrip";
+
+    var lichGanNhat = ViewBag.LichGanNhat
+        as Dictionary<int, LichKhoiHanh>;
+
+    var lichTheoNgay = ViewBag.LichTheoNgay
+        as Dictionary<string, int>
+        ?? new Dictionary<string, int>();
+
+    var lichTheoTour = ViewBag.LichTheoTour
+        as Dictionary<int, List<LichKhoiHanh>>
+        ?? new Dictionary<int, List<LichKhoiHanh>>();
+
+    var loaiTours = ViewBag.LoaiTours
+        as List<LoaiTour> ?? new List<LoaiTour>();
+
+    var phuongTienList = ViewBag.PhuongTienList
+        as List<string> ?? new List<string>();
+
+    var wishlistIds = ViewBag.WishlistIds
+        as HashSet<int> ?? new HashSet<int>();
+
+    var q = Context.Request.Query;
+    var ngayDangChon = q["ngaydi"].ToString();
+
+    var chiConCho =
+        q["concho"] == "true" ||
+        q["concho"] == "on";
+
+    var currentPage = ViewBag.CurrentPage is int cp ? cp : 1;
+    var totalPages = ViewBag.TotalPages is int tp ? tp : 1;
+
+    var selectedSort = q["sort"].ToString();
+    var selectedLoai = q["idLoaiTour"].ToString();
+
+    var selectedChuDe = q["chuDe"]
+        .ToString()
+        .Trim()
+        .ToLowerInvariant();
+
+    var returnUrl =
+        $"{Context.Request.Path}{Context.Request.QueryString}";
+
+    var chuDeNames = new Dictionary<string, string>
+    {
+        ["bien"] = "Biển đảo",
+        ["nui"] = "Núi",
+        ["vanhoa"] = "Văn hóa",
+        ["thanhpho"] = "Thành phố",
+        ["khampha"] = "Khám phá"
+    };
+
+    var tenChuDe = chuDeNames.TryGetValue(
+        selectedChuDe,
+        out var tenDaChon
+    )
+        ? tenDaChon
+        : "Tất cả tour";
+}
+
+<link rel="stylesheet"
+      href="~/css/tour-filter.css"
+      asp-append-version="true" />
+
+<link rel="stylesheet"
+      href="~/css/tour-compare.css"
+      asp-append-version="true" />
+
+<link rel="stylesheet"
+      href="~/css/tour-listing-premium.css"
+      asp-append-version="true" />
+
+<link rel="stylesheet"
+      href="~/css/tour-compare-selection.css"
+      asp-append-version="true" />
+
+<style>
+
+    /* DANH SACH LICH KHOI HANH TREN THE TOUR */
+    .ht-tour-departures {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        min-width: 0;
+        margin-top: 16px;
+        padding-top: 13px;
+        border-top: 1px solid #edf0ea;
+    }
+
+    .ht-tour-departures-label {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        flex-shrink: 0;
+        color: #52675a;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .ht-tour-departures-label i {
+        color: #cc914e;
+        font-size: 15px;
+    }
+
+    .ht-tour-departures-scroll {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        overflow-x: auto;
+        padding: 4px 2px 8px;
+        scrollbar-width: thin;
+        scrollbar-color: #c5d8c8 transparent;
+    }
+
+    .ht-tour-departure-date {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        min-width: 58px;
+        padding: 7px 10px;
+        border: 1px solid #d8a27b;
+        border-radius: 7px;
+        background: #fffaf5;
+        color: #b66a35;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background 0.2s ease,
+                    border-color 0.2s ease,
+                    color 0.2s ease;
+    }
+
+    .ht-tour-departure-date:hover {
+        background: #28513c;
+        border-color: #28513c;
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .ht-tour-departure-date:focus-visible {
+        outline: 2px solid #28513c;
+        outline-offset: 2px;
+    }
+
+    .ht-tour-no-departure {
+        color: #8b9690;
+        font-size: 12px;
+        font-style: italic;
+    }
+
+    @@media (max-width: 767px) {
+        .ht-tour-departures {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .ht-tour-departures-scroll {
+            width: 100%;
+        }
+    }
+
+    /* HAPPYTRIP DEPARTURE CALENDAR */
+
+    .ht-departure-filter {
+        width: 100%;
+    }
+
+    .ht-departure-label {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 12px;
+        color: #244d38;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .ht-departure-label i {
+        color: #c58b45;
+    }
+
+    .ht-calendar {
+        width: 100%;
+        padding: 12px 9px;
+        background: #ffffff;
+        border: 1px solid #e2e9df;
+        border-radius: 15px;
+    }
+
+    .ht-calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 15px;
+        padding: 5px;
+        background: #f3f7f1;
+        border-radius: 30px;
+    }
+
+    .ht-calendar-month {
+        color: #244d38;
+        font-size: 13px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .ht-calendar-nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        background: #ffffff;
+        color: #315a43;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .ht-calendar-nav:hover {
+        background: #e2eee1;
+    }
+
+    .ht-calendar-weekdays,
+    .ht-calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 3px;
+    }
+
+    .ht-calendar-weekdays {
+        margin-bottom: 7px;
+    }
+
+    .ht-calendar-weekdays span {
+        padding: 7px 0;
+        text-align: center;
+        color: #879b8a;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .ht-calendar-day {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        width: 100%;
+        min-height: 47px;
+        padding: 5px 1px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        color: #9aa99d;
+        cursor: default;
+    }
+
+    .ht-calendar-day-number {
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .ht-calendar-day-count {
+        font-size: 9px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .ht-calendar-day.has-tour {
+        background: #ecf5eb;
+        color: #275740;
+        border-color: #deecdc;
+        cursor: pointer;
+    }
+
+    .ht-calendar-day.has-tour:hover {
+        background: #dbeedd;
+        border-color: #a9cfaf;
+    }
+
+    .ht-calendar-day.is-selected {
+        background: #24543d;
+        border-color: #24543d;
+        color: #ffffff;
+    }
+
+    .ht-calendar-day.is-selected:hover {
+        background: #1b4230;
+    }
+
+    .ht-calendar-day.is-selected .ht-calendar-day-count {
+        color: #ffe39b;
+    }
+
+    .ht-calendar-day.is-today {
+        border-color: #d6a34b;
+        box-shadow: inset 0 0 0 1px #d6a34b;
+    }
+
+    .ht-calendar-day.is-today .ht-calendar-day-number {
+        color: #a96b19;
+        font-weight: 900;
+    }
+
+    .ht-calendar-day.is-today.is-selected .ht-calendar-day-number {
+        color: #ffffff;
+    }
+
+    .ht-calendar-day:focus-visible {
+        outline: 2px solid #d39a45;
+        outline-offset: 2px;
+    }
+
+    .ht-calendar-hint {
+        margin: 13px 3px 0;
+        color: #819587;
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .ht-calendar-hint i {
+        margin-right: 4px;
+    }
+
+    @@media (max-width: 767px) {
+        .ht-calendar-day {
+            min-height: 45px;
+        }
+    }
+
+    /* LIVE SEARCH */
+
+    #happytripSearchResults {
+        position: fixed;
+        display: none;
+        z-index: 2147483647;
+        background: #ffffff;
+        border: 1px solid #e0e8de;
+        border-radius: 16px;
+        box-shadow: 0 18px 48px rgba(25, 54, 35, .20);
+        max-height: 380px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 7px;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    .ht-search-result {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 88px;
+        padding: 10px;
+        text-decoration: none;
+        border-radius: 10px;
+        color: #254936;
+        transition: background .15s ease;
+    }
+
+    .ht-search-result:hover,
+    .ht-search-result:focus-visible {
+        background: #edf5ec;
+        color: #254936;
+        text-decoration: none;
+        outline: none;
+    }
+
+    .ht-search-result__icon {
+        width: 88px;
+        height: 66px;
+        min-width: 88px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: #edf4eb;
+        color: #418458;
+    }
+
+    .ht-search-result__icon img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform .25s ease;
+    }
+
+    .ht-search-result:hover .ht-search-result__icon img {
+        transform: scale(1.06);
+    }
+
+    .ht-search-result__info {
+        display: flex;
+        flex: 1;
+        min-width: 0;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .ht-search-result__info strong {
+        font-size: 13px;
+        line-height: 1.45;
+        font-weight: 700;
+        white-space: normal;
+    }
+
+    .ht-search-result__info small {
+        color: #7d8b80;
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .ht-search-result__price {
+        flex-shrink: 0;
+        color: #a77327;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .ht-search-message {
+        padding: 16px 12px;
+        color: #687a6e;
+        font-size: 13px;
+    }
+
+    .ht-search-footer {
+        padding: 10px 12px;
+        border-top: 1px solid #eef1eb;
+        color: #809084;
+        font-size: 11px;
+    }
+
+    @@media (max-width: 600px) {
+        .ht-search-result__icon {
+            width: 70px;
+            height: 57px;
+            min-width: 70px;
+        }
+
+        .ht-search-result {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .ht-search-result__price {
+            margin-left: 78px;
+        }
+    }
+</style>
+
+<div class="tours-container ht-explorer ht-travel-catalog">
+
+    <!-- 01. HERO -->
+
+    <section class="ht-catalog-hero"
+             aria-labelledby="htCatalogTitle">
+
+        <div class="ht-catalog-hero-overlay"></div>
+
+        <div class="ht-catalog-hero-inner">
+
+            <span class="ht-catalog-kicker">
+                TOUR HAPPYTRIP
+            </span>
+
+            <h1 id="htCatalogTitle">
+                Tìm chuyến đi dành cho bạn
+            </h1>
+
+            <p class="ht-catalog-description">
+                Khám phá điểm đến và lựa chọn tour phù hợp
+                với sở thích, thời gian và ngân sách.
+            </p>
+
+            <form asp-controller="Tour"
+                  asp-action="TatCa"
+                  method="get"
+                  class="ht-catalog-search"
+                  role="search">
+
+                <i class="fa-solid fa-magnifying-glass"
+                   aria-hidden="true"></i>
+
+                <input type="search"
+                       id="happytripHeroSearch"
+                       name="diadiem"
+                       value="@q["diadiem"]"
+                       placeholder="Nhập tên tour hoặc điểm đến..."
+                       aria-label="Tìm kiếm tour và điểm đến"
+                       autocomplete="off" />
+
+                @if (!string.IsNullOrWhiteSpace(selectedChuDe))
+                {
+                    <input type="hidden"
+                           name="chuDe"
+                           value="@selectedChuDe" />
+                }
+
+                <button type="submit">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Tìm kiếm</span>
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+
+    <!-- 02. CHU DE -->
+
+    <section class="ht-catalog-categories"
+             aria-label="Khám phá theo chủ đề">
+
+        <div class="ht-category-heading">
+
+            <i class="fa-regular fa-compass"></i>
+            <strong>Khám phá theo chủ đề:</strong>
+
+        </div>
+
+        <div class="ht-category-list">
+
+            <a href="@BuildCategoryUrl("")"
+               class="ht-category-pill @(string.IsNullOrEmpty(selectedChuDe) ? "is-active" : "")">
+
+                <i class="fa-solid fa-border-all"></i>
+                Tất cả
+
+            </a>
+
+            <a href="@BuildCategoryUrl("bien")"
+               class="ht-category-pill @(selectedChuDe == "bien" ? "is-active" : "")">
+
+                <i class="fa-solid fa-water"></i>
+                Biển đảo
+
+            </a>
+
+            <a href="@BuildCategoryUrl("nui")"
+               class="ht-category-pill @(selectedChuDe == "nui" ? "is-active" : "")">
+
+                <i class="fa-solid fa-mountain"></i>
+                Núi
+
+            </a>
+
+            <a href="@BuildCategoryUrl("vanhoa")"
+               class="ht-category-pill @(selectedChuDe == "vanhoa" ? "is-active" : "")">
+
+                <i class="fa-solid fa-landmark"></i>
+                Văn hóa
+
+            </a>
+
+            <!-- THANH PHO: DA HOAT DONG -->
+
+            <a href="@BuildCategoryUrl("thanhpho")"
+               class="ht-category-pill @(selectedChuDe == "thanhpho" ? "is-active" : "")">
+
+                <i class="fa-solid fa-city"></i>
+                Thành phố
+
+            </a>
+
+            <a href="@BuildCategoryUrl("khampha")"
+               class="ht-category-pill @(selectedChuDe == "khampha" ? "is-active" : "")">
+
+                <i class="fa-regular fa-compass"></i>
+                Khám phá
+
+            </a>
+
+        </div>
+
+    </section>
+
+    <!-- 03. MAIN LAYOUT -->
+        <div class="ht-explorer-layout ht-catalog-layout">
+
+        <!-- 04. SIDEBAR FILTER -->
+
+        <aside class="ht-filter-sidebar ht-catalog-sidebar">
+
+            <div class="ht-filter-heading">
+
+                <div>
+                    <i class="fa-solid fa-sliders"></i>
+                    <strong>Bộ lọc tour</strong>
+                </div>
+
+                <a asp-controller="Tour"
+                   asp-action="TatCa"
+                   class="ht-filter-reset">
+
+                    Xóa lọc
+
+                </a>
+
+            </div>
+
+            <form method="get"
+                  asp-controller="Tour"
+                  asp-action="TatCa"
+                  id="quickFilterForm"
+                  class="ht-filter-form">
+
+                @if (!string.IsNullOrWhiteSpace(selectedChuDe))
+                {
+                    <input type="hidden"
+                           name="chuDe"
+                           value="@selectedChuDe" />
+                }
+
+                <!-- Diem den -->
+
+                <div class="ht-filter-group planner-field planner-field-relative">
+
+                    <label for="diadiemInputTop">
+
+                        <i class="fa-solid fa-location-dot"></i>
+                        Điểm đến
+
+                    </label>
+
+                    <input type="text"
+                           name="diadiem"
+                           id="diadiemInputTop"
+                           placeholder="Nhập tên tour hoặc điểm đến..."
+                           value="@q["diadiem"]"
+                           autocomplete="off" />
+
+                    <div class="autocomplete-box"
+                         id="goiYBoxTop"
+                         style="display:none"></div>
+
+                </div>
+
+                <!-- Lich khoi hanh -->
+                <div class="ht-filter-group ht-departure-filter">
+
+                    <label class="ht-departure-label">
+                        <i class="fa-regular fa-calendar-days"></i>
+                        Ngày khởi hành
+                    </label>
+
+                    <input type="hidden"
+                        id="ngaydiTop"
+                        name="ngaydi"
+                        value="@ngayDangChon" />
+
+                    <div class="ht-calendar">
+
+                        <div class="ht-calendar-header">
+
+                            <button type="button"
+                                    class="ht-calendar-nav"
+                                    id="htCalendarPrev"
+                                    aria-label="Tháng trước">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+
+                            <span id="htCalendarMonth"
+                                class="ht-calendar-month"></span>
+
+                            <button type="button"
+                                    class="ht-calendar-nav"
+                                    id="htCalendarNext"
+                                    aria-label="Tháng sau">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+
+                        </div>
+
+                        <div class="ht-calendar-weekdays">
+                            <span>T2</span>
+                            <span>T3</span>
+                            <span>T4</span>
+                            <span>T5</span>
+                            <span>T6</span>
+                            <span>T7</span>
+                            <span>CN</span>
+                        </div>
+
+                        <div id="htCalendarDays"
+                            class="ht-calendar-days"></div>
+
+                        <p class="ht-calendar-hint">
+                            <i class="fa-regular fa-circle-info"></i>
+                            Chọn ngày để lọc tour. Nhấn lại ngày đã chọn để xem tất cả.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <!-- So ngay -->
+                <div class="ht-filter-group planner-field">
+
+                    <label for="songayTop">
+
+                        <i class="fa-regular fa-clock"></i>
+                        Số ngày
+
+                    </label>
+
+                    <input type="number"
+                           id="songayTop"
+                           name="songay"
+                           min="1"
+                           placeholder="Ví dụ: 3"
+                           value="@q["songay"]" />
+
+                </div>
+
+                <!-- Loai tour -->
+
+                <div class="ht-filter-group planner-field">
+
+                    <label for="idLoaiTourTop">
+
+                        <i class="fa-solid fa-layer-group"></i>
+                        Loại tour
+
+                    </label>
+
+                    <select id="idLoaiTourTop"
+                            name="idLoaiTour">
+
+                        <option value="">
+                            Tất cả loại tour
+                        </option>
+
+                        @foreach (var lt in loaiTours)
+                        {
+                            <option value="@lt.IdLoaiTour"
+                                    selected="@(selectedLoai == lt.IdLoaiTour.ToString())">
+
+                                @lt.TenLoai
+
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <!-- Phuong tien -->
+
+                <div class="ht-filter-group planner-field">
+
+                    <label for="phuongTienTop">
+
+                        <i class="fa-solid fa-bus-simple"></i>
+                        Phương tiện
+
+                    </label>
+
+                    <select id="phuongTienTop"
+                            name="phuongtien">
+
+                        <option value="">
+                            Tất cả phương tiện
+                        </option>
+
+                        @foreach (var pt in phuongTienList)
+                        {
+                            <option value="@pt"
+                                    selected="@(q["phuongtien"] == pt)">
+
+                                @pt
+
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <!-- Con cho -->
+
+                <div class="ht-filter-group ht-filter-check-group">
+
+                    <label class="ht-filter-check"
+                           for="conChoCheckTop">
+
+                        <input type="checkbox"
+                               id="conChoCheckTop"
+                               name="concho"
+                               value="true"
+                               checked="@chiConCho" />
+
+                        <span>
+                            Chỉ hiển thị tour còn chỗ
+                        </span>
+
+                    </label>
+
+                </div>
+
+                <!-- Giu khoang gia -->
+
+                @if (!string.IsNullOrWhiteSpace(q["giamin"]))
+                {
+                    <input type="hidden"
+                           name="giamin"
+                           value="@q["giamin"]" />
+                }
+
+                @if (!string.IsNullOrWhiteSpace(q["giamax"]))
+                {
+                    <input type="hidden"
+                           name="giamax"
+                           value="@q["giamax"]" />
+                }
+
+                @if (!string.IsNullOrWhiteSpace(selectedSort))
+                {
+                    <input type="hidden"
+                           name="sort"
+                           value="@selectedSort" />
+                }
+
+                <button type="submit"
+                        class="ht-filter-submit">
+
+                    <i class="fa-solid fa-filter"></i>
+                    Lọc kết quả
+
+                </button>
+
+                <button type="button"
+                        class="ht-filter-advanced"
+                        data-bs-toggle="modal"
+                        data-bs-target="#filterModal">
+
+                    <i class="fa-solid fa-sliders"></i>
+                    Lọc nâng cao
+
+                </button>
+
+            </form>
+
+        </aside>
+
+        <!-- 05. TOUR RESULTS -->
+
+        <main class="ht-explorer-results ht-catalog-results">
+
+            <div class="ht-results-toolbar">
+
+                <div class="ht-results-title-wrap">
+
+                    <h2>
+
+                        @tenChuDe
+
+                        <span class="ht-results-count">
+                            @Model.Count
+                        </span>
+
+                    </h2>
+
+                </div>
+
+                <div class="ht-results-actions">
+
+                    <span class="ht-results-page">
+                        Trang @currentPage / @Math.Max(1, totalPages)
+                    </span>
+
+                    <form method="get"
+                          asp-controller="Tour"
+                          asp-action="TatCa"
+                          class="ht-tour-sort-form"
+                          id="tourSortForm">
+
+                        @foreach (var parameter in Context.Request.Query)
+                                                {
+                            if (!string.Equals(
+                                    parameter.Key,
+                                    "sort",
+                                    StringComparison.OrdinalIgnoreCase)
+                                && !string.Equals(
+                                    parameter.Key,
+                                    "page",
+                                    StringComparison.OrdinalIgnoreCase))
+                            {
+                                <input type="hidden"
+                                       name="@parameter.Key"
+                                       value="@parameter.Value.ToString()" />
+                            }
+                        }
+
+                        <label for="tourSortSelect">
+                            Sắp xếp:
+                        </label>
+
+                        <select id="tourSortSelect"
+                                name="sort">
+
+                            <option value=""
+                                    selected="@(selectedSort == "")">
+                                Mặc định
+                            </option>
+
+                            <option value="ten"
+                                    selected="@(selectedSort == "ten")">
+                                Tên tour A–Z
+                            </option>
+
+                            <option value="gia_tang"
+                                    selected="@(selectedSort == "gia_tang")">
+                                Giá thấp đến cao
+                            </option>
+
+                            <option value="gia_giam"
+                                    selected="@(selectedSort == "gia_giam")">
+                                Giá cao đến thấp
+                            </option>
+
+                        </select>
+
+                        <button type="submit"
+                                class="ht-sort-submit">
+
+                            Áp dụng
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            <!-- KHONG CO KET QUA -->
+
+            @if (Model.Count == 0)
+            {
+                <div class="ht-results-empty">
+
+                    <i class="fa-regular fa-compass"></i>
+
+                    <h3>
+                        Chưa tìm thấy tour phù hợp
+                    </h3>
+
+                    @if (selectedChuDe == "thanhpho")
+                    {
+                        <p>
+                            Hiện chưa có tour được gắn
+                            chủ đề Thành phố.
+                            Bạn có thể khám phá những
+                            chủ đề khác của HappyTrip.
+                        </p>
+                    }
+                    else
+                    {
+                        <p>
+                            Bạn thử thay đổi điểm đến,
+                            ngày đi hoặc các điều kiện
+                            lọc nhé.
+                        </p>
+                    }
+
+                    <a asp-controller="Tour"
+                       asp-action="TatCa">
+
+                        Xem tất cả tour
+
+                    </a>
+
+                </div>
+            }
+            else
+            {
+                <!-- TOUR CARDS -->
+
+                <section class="tours-showcase ht-ticket-list">
+
+                    <div class="tour-listing-grid ht-ticket-grid">
+
+                        @{
+                            var tourIndex = 0;
+                        }
+
+                        @foreach (var t in Model)
+                        {
+                            var lich = lichGanNhat != null &&
+                                lichGanNhat.TryGetValue(
+                                    t.IdTour,
+                                    out var lichTimDuoc
+                                )
+                                ? lichTimDuoc
+                                : null;
+
+                            var soCho = lich?.SoChoConLai ?? 0;
+
+                            var trangThai = lich == null
+                                ? "Chưa có lịch"
+                                : soCho <= 0
+                                    ? "Hết chỗ"
+                                    : soCho <= 5
+                                        ? "Sắp hết chỗ"
+                                        : "Còn chỗ";
+
+                            var statusClass = lich == null
+                                ? "ht-status-pending"
+                                : soCho <= 0
+                                    ? "ht-status-full"
+                                    : soCho <= 5
+                                        ? "ht-status-low"
+                                        : "ht-status-open";
+
+                            var tenLoai = loaiTours
+                                .FirstOrDefault(x =>
+                                    x.IdLoaiTour == t.IdLoaiTour)
+                                ?.TenLoai ?? "Tour du lịch";
+
+                            var giaHienThi =
+                                t.GiaKhuyenMai ?? t.GiaGoc;
+
+                            var diaDiemTour = t.DiaDiem?.Trim() ?? "";
+                            var dauPhanCach = new[] { "→", "–", " - " }
+                                .Select(d => diaDiemTour.IndexOf(d, StringComparison.Ordinal))
+                                .Where(i => i >= 0)
+                                .DefaultIfEmpty(diaDiemTour.Length)
+                                .Min();
+                            var diemKhoiHanh = diaDiemTour.Length == 0
+                                ? "Chưa cập nhật"
+                                : diaDiemTour.Substring(0, dauPhanCach).Trim();
+
+                            var danhSachLich = lichTheoTour.TryGetValue(
+                                t.IdTour,
+                                out var lichCuaTour
+                            )
+                                ? lichCuaTour
+                                : new List<LichKhoiHanh>();
+
+                            var lichConCho = danhSachLich
+                                .Where(l =>
+                                    l.SoChoConLai > 0 &&
+                                    (
+                                        l.TrangThai == "Còn chỗ" ||
+                                        l.TrangThai == "Sắp hết chỗ"
+                                    )
+                                )
+                                .OrderBy(l => l.NgayKhoiHanh)
+                                .ThenBy(l => l.GioKhoiHanh)
+                                .ToList();
+
+                            <article class="tour-card-modern
+                                            tour-list-card
+                                            ht-tour-card
+                                            ht-ticket-card"
+                                     style="--stagger:@(tourIndex % 9)">
+
+                                <!-- ANH -->
+
+                                <div class="tour-list-image-wrap
+                                            ht-tour-media
+                                            ht-ticket-media">
+
+                                    <img src="@TourImagePathHelper.ToTourImageSrc(t.HinhAnh)"
+                                         class="tour-list-image"
+                                         alt="Hình ảnh tour @t.TenTour"
+                                         loading="lazy" />
+
+                                    <form asp-controller="Wishlist"
+                                          asp-action="Toggle"
+                                          method="post"
+                                          class="ht-tour-wishlist">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="idTour"
+                                               value="@t.IdTour" />
+
+                                        <input type="hidden"
+                                               name="returnUrl"
+                                               value="@returnUrl" />
+
+                                        <button type="submit"
+                                                class="ht-tour-heart @(wishlistIds.Contains(t.IdTour) ? "is-favorite" : "")"
+                                                title="@(wishlistIds.Contains(t.IdTour) ? "Bỏ khỏi yêu thích" : "Thêm vào yêu thích")"
+                                                aria-label="@(wishlistIds.Contains(t.IdTour) ? "Bỏ khỏi yêu thích" : "Thêm vào yêu thích")">
+
+                                            <i class="fa@(wishlistIds.Contains(t.IdTour) ? "s" : "r") fa-heart"></i>
+
+                                        </button>
+
+                                    </form>
+
+                                    @if (t.PhanTramGiam > 0)
+                                    {
+                                        <span class="ht-tour-discount">
+
+                                            -@t.PhanTramGiam%
+
+                                        </span>
+                                    }
+
+                                </div>
+
+                                <!-- THONG TIN -->
+
+                                <div class="tour-list-body
+                                            ht-tour-content
+                                            ht-ticket-content">
+
+                                    <div class="ht-ticket-tags">
+
+                                        <span class="ht-ticket-category">
+
+                                            <i class="fa-solid fa-compass"></i>
+                                            @tenLoai
+
+                                        </span>
+
+                                        <span class="ht-tour-code">
+                                            @t.MaTour
+                                        </span>
+
+                                    </div>
+
+                                    <h3 class="tour-list-title ht-tour-title"
+                                        title="@t.TenTour">
+
+                                        @t.TenTour
+
+                                    </h3>
+
+                                    <div class="ht-tour-information
+                                                ht-ticket-information">
+
+                                        <div class="ht-tour-info ht-tour-info-code">
+                                            <i class="fa-solid fa-ticket"></i>
+                                            <span>Mã chương trình: @t.MaTour</span>
+                                        </div>
+
+                                        <div class="ht-tour-info">
+
+                                            <i class="fa-solid fa-location-dot"></i>
+
+                                            <span title="@t.DiaDiem">
+                                                Điểm khởi hành: @diemKhoiHanh
+                                            </span>
+
+                                        </div>
+
+                                        <div class="ht-tour-info">
+
+                                            <i class="fa-regular fa-clock"></i>
+
+                                            <span>
+
+                                                Thời gian: @(string.IsNullOrWhiteSpace(t.ThoiGian)
+                                                    ? "Theo lịch tour"
+                                                    : t.ThoiGian)
+
+                                            </span>
+
+                                        </div>
+
+                                        <div class="ht-tour-info">
+
+                                            <i class="fa-solid fa-bus-simple"></i>
+
+                                            <span>
+
+                                                Phương tiện: @(string.IsNullOrWhiteSpace(t.PhuongTien)
+                                                    ? "Chưa cập nhật"
+                                                    : t.PhuongTien)
+
+                                            </span>
+                                                                                    </div>
+
+                                    </div>
+
+                                    <!-- DANH SACH NGAY KHOI HANH -->
+                                        <div class="ht-tour-departures">
+
+                                            <div class="ht-tour-departures-label">
+                                                <i class="fa-regular fa-calendar-days"></i>
+                                                <span>Ngày khởi hành:</span>
+                                            </div>
+
+                                            @if (lichConCho.Any())
+                                            {
+                                                <div class="ht-tour-departures-scroll">
+
+                                                    @foreach (var lichItem in lichConCho)
+                                                    {
+                                                        var ngayHienThi =
+                                                            lichItem.NgayKhoiHanh.ToString("dd/MM");
+
+                                                        var ngayDayDu =
+                                                            lichItem.NgayKhoiHanh.ToString("dd/MM/yyyy");
+
+                                                        <a asp-controller="Tour"
+                                                        asp-action="ChiTiet"
+                                                        asp-route-id="@t.IdTour"
+                                                        class="ht-tour-departure-date"
+                                                        title="Khởi hành ngày @ngayDayDu">
+
+                                                            @ngayHienThi
+
+                                                        </a>
+                                                    }
+
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <span class="ht-tour-no-departure">
+                                                    Chưa có lịch khởi hành còn chỗ
+                                                </span>
+                                            }
+
+                                    </div>
+
+                                </div>
+
+                                <!-- GIA VA HANH DONG -->
+
+                                <div class="ht-ticket-booking">
+
+                                    <span class="ht-tour-status @statusClass">
+
+                                        @trangThai
+
+                                    </span>
+
+                                    <div class="ht-ticket-price">
+
+                                        <span>
+                                            Giá từ / khách
+                                        </span>
+
+                                        <strong>
+
+                                            @(giaHienThi.HasValue
+                                                ? string.Format(
+                                                    "{0:N0}đ",
+                                                    giaHienThi.Value)
+                                                : "Liên hệ")
+
+                                        </strong>
+
+                                    </div>
+
+                                    <div class="ht-ticket-actions">
+
+                                        <a asp-controller="Tour"
+                                           asp-action="ChiTiet"
+                                           asp-route-id="@t.IdTour"
+                                           class="tour-link-detail ht-tour-detail">
+
+                                            Khám phá tour
+
+                                            <i class="fa-solid fa-arrow-right"></i>
+
+                                        </a>
+
+                                        <button type="button"
+                                                class="compare-toggle-btn ht-tour-compare"
+                                                data-tour-id="@t.IdTour"
+                                                aria-pressed="false">
+
+                                            <i class="fa-solid fa-code-compare"></i>
+
+                                            <span>
+                                                Thêm so sánh
+                                            </span>
+
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </article>
+
+                            tourIndex++;
+                        }
+
+                    </div>
+
+                </section>
+            }
+
+            <!-- 07. PHAN TRANG -->
+
+            @if (totalPages > 1)
+            {
+                <nav class="ht-tour-pagination"
+                     aria-label="Phân trang tour">
+
+                    @if (currentPage > 1)
+                    {
+                        <a class="ht-page-button ht-page-arrow"
+                           href="@BuildPageUrl(currentPage - 1)"
+                           aria-label="Trang trước">
+
+                            <i class="fa-solid fa-arrow-left"></i>
+
+                        </a>
+                    }
+
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <a class="ht-page-button @(i == currentPage ? "ht-page-active" : "")"
+                           href="@BuildPageUrl(i)"
+                           aria-label="Trang @i"
+                           aria-current="@(i == currentPage ? "page" : null)">
+
+                            @i
+
+                        </a>
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <a class="ht-page-button ht-page-arrow"
+                           href="@BuildPageUrl(currentPage + 1)"
+                           aria-label="Trang tiếp theo">
+
+                            <i class="fa-solid fa-arrow-right"></i>
+
+                        </a>
+                    }
+
+                </nav>
+            }
+
+        </main>
+
+    </div>
+
+    <!-- 08. MODAL LOC NANG CA -->
+
+    <div class="modal fade"
+         id="filterModal"
+         tabindex="-1"
+         aria-labelledby="filterModalTitle"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+
+            <div class="modal-content rounded-4 ht-filter-modal">
+
+                <div class="modal-header">
+
+                    <h5 id="filterModalTitle"
+                        class="modal-title fw-bold">
+
+                        <i class="fa-solid fa-sliders"></i>
+                        Bộ lọc nâng cao
+
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Đóng"></button>
+
+                </div>
+
+                <form method="get"
+                      asp-controller="Tour"
+                      asp-action="TatCa"
+                      id="filterForm">
+
+                    @if (!string.IsNullOrWhiteSpace(selectedChuDe))
+                    {
+                        <input type="hidden"
+                               name="chuDe"
+                               value="@selectedChuDe" />
+                    }
+
+                    <div class="modal-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-4">
+
+                                <label class="form-label fw-semibold"
+                                       for="diadiemInput">
+
+                                    Điểm đến
+
+                                </label>
+
+                                <input type="text"
+                                       name="diadiem"
+                                       id="diadiemInput"
+                                       class="form-control"
+                                       placeholder="Nhập tên tour hoặc điểm đến..."
+                                       autocomplete="off"
+                                       value="@q["diadiem"]" />
+
+                                <div class="autocomplete-box"
+                                     id="goiYBox"
+                                     style="display:none"></div>
+
+                            </div>
+
+                            <div class="col-md-4">
+
+                                <label class="form-label fw-semibold">
+                                    Ngày đi
+                                </label>
+
+                                <input type="date"
+                                       name="ngaydi"
+                                       class="form-control"
+                                       value="@q["ngaydi"]" />
+
+                            </div>
+
+                            <div class="col-md-4">
+
+                                <label class="form-label fw-semibold">
+                                    Số ngày
+                                </label>
+
+                                <input type="number"
+                                       name="songay"
+                                       class="form-control"
+                                       min="1"
+                                       placeholder="Ví dụ: 3"
+                                       value="@q["songay"]" />
+
+                            </div>
+
+                            <div class="col-md-6">
+
+                                <label class="form-label fw-semibold">
+                                    Phương tiện
+                                </label>
+
+                                <select name="phuongtien"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Tất cả
+                                    </option>
+
+                                    @foreach (var pt in phuongTienList)
+                                    {
+                                        <option value="@pt"
+                                                selected="@(q["phuongtien"] == pt)">
+
+                                            @pt
+
+                                        </option>
+                                    }
+
+                                </select>
+
+                            </div>
+
+                            <div class="col-md-6">
+
+                                <label class="form-label fw-semibold">
+                                    Loại tour
+                                </label>
+
+                                <select name="idLoaiTour"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Tất cả
+                                    </option>
+                                                                @foreach (var lt in loaiTours)
+                                    {
+                                        <option value="@lt.IdLoaiTour"
+                                                selected="@(selectedLoai == lt.IdLoaiTour.ToString())">
+
+                                            @lt.TenLoai
+
+                                        </option>
+                                    }
+
+                                </select>
+
+                            </div>
+
+                            <div class="col-12">
+
+                                <div class="form-check">
+
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="conChoCheck"
+                                           name="concho"
+                                           value="true"
+                                           checked="@chiConCho" />
+
+                                    <label class="form-check-label"
+                                           for="conChoCheck">
+
+                                        Chỉ hiện tour còn chỗ
+
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                            <!-- KHOANG GIA -->
+
+                            <div class="col-12">
+
+                                <label class="form-label fw-semibold">
+                                    Khoảng giá
+                                </label>
+
+                                <div class="price-slider-container">
+
+                                    <div class="slider-track"></div>
+
+                                    <input type="range"
+                                           class="range-min"
+                                           min="0"
+                                           max="20000000"
+                                           step="50000"
+                                           value="0" />
+
+                                    <input type="range"
+                                           class="range-max"
+                                           min="0"
+                                           max="20000000"
+                                           step="50000"
+                                           value="20000000" />
+
+                                </div>
+
+                                <div class="d-flex justify-content-between mt-3 gap-3">
+
+                                    <div>
+
+                                        <label class="form-label">
+                                            Từ
+                                        </label>
+
+                                        <input type="text"
+                                               name="giamin"
+                                               id="giaminInput"
+                                               class="form-control money-input"
+                                               value="@q["giamin"]" />
+
+                                    </div>
+
+                                    <div>
+
+                                        <label class="form-label">
+                                            Đến
+                                        </label>
+
+                                        <input type="text"
+                                               name="giamax"
+                                               id="giamaxInput"
+                                               class="form-control money-input"
+                                               value="@q["giamax"]" />
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="col-12">
+
+                                <label class="form-label fw-semibold">
+                                    Sắp xếp
+                                </label>
+
+                                <select name="sort"
+                                        class="form-select">
+
+                                    <option value=""
+                                            selected="@(selectedSort == "")">
+
+                                        Mặc định
+
+                                    </option>
+
+                                    <option value="gia_tang"
+                                            selected="@(selectedSort == "gia_tang")">
+
+                                        Giá tăng dần
+
+                                    </option>
+
+                                    <option value="gia_giam"
+                                            selected="@(selectedSort == "gia_giam")">
+
+                                        Giá giảm dần
+
+                                    </option>
+
+                                    <option value="ten"
+                                            selected="@(selectedSort == "ten")">
+
+                                        Tên A–Z
+
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">
+
+                            Đóng
+
+                        </button>
+
+                        <button type="submit"
+                                class="ht-modal-submit">
+
+                            Áp dụng bộ lọc
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- 09. THANH SO SANH -->
+
+    <div id="compareBar"
+         class="compare-bar"
+         hidden
+         aria-label="Danh sách tour so sánh">
+
+        <div class="compare-bar__content">
+
+            <span id="compareCount">
+                Đã chọn 0/4 tour
+            </span>
+
+            <button type="button"
+                    id="compareNowBtn"
+                    class="btn btn-sm btn-primary"
+                    disabled>
+
+                So sánh ngay
+
+            </button>
+
+            <button type="button"
+                    id="clearCompareBtn"
+                    class="btn btn-sm btn-outline-secondary"
+                    title="Xóa tất cả tour đã chọn"
+                    aria-label="Xóa tất cả tour đã chọn">
+
+                Xóa
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- KHUNG GOI Y TIM KIEM -->
+
+<div id="happytripSearchResults"
+     role="region"
+     aria-label="Gợi ý tìm kiếm tour"></div>
+
+@functions {
+    private string BuildPageUrl(int page)
+    {
+        var parameters = new Dictionary<string, string?>();
+
+        foreach (var item in Context.Request.Query)
+        {
+            if (!string.Equals(
+                item.Key,
+                "page",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                parameters[item.Key] = item.Value.ToString();
+            }
+        }
+
+        parameters["page"] = page.ToString();
+
+        return $"{Context.Request.Path}{Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(string.Empty, parameters)}";
+    }
+
+    private string BuildCategoryUrl(string category)
+    {
+        var parameters = new Dictionary<string, string?>();
+
+        foreach (var item in Context.Request.Query)
+        {
+            if (!string.Equals(
+                    item.Key,
+                    "chuDe",
+                    StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(
+                    item.Key,
+                    "page",
+                    StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(
+                    item.Key,
+                    "idLoaiTour",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                parameters[item.Key] = item.Value.ToString();
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            parameters["chuDe"] = category;
+        }
+
+        return $"{Context.Request.Path}{Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(string.Empty, parameters)}";
+    }
+}
+
+<!-- SAP XEP -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const sortSelect =
+            document.getElementById("tourSortSelect");
+
+        const sortForm =
+            document.getElementById("tourSortForm");
+
+        if (sortSelect && sortForm) {
+            sortSelect.addEventListener("change", function () {
+                sortForm.requestSubmit();
+            });
+        }
+    });
+</script>
+
+<!-- CAC MODULE HIEN CO -->
+
+<script src="~/js/filter-slider.js"
+        asp-append-version="true"></script>
+
+<script src="~/js/compare-tour.js"
+        asp-append-version="true"></script>
+
+<script src="~/js/tour-listing-premium.js"
+        asp-append-version="true"
+        defer></script>
+
+<!-- LIVE SEARCH -->
+<script>
+(function () {
+    "use strict";
+
+    function initializeHappyTripLiveSearch() {
+        const inputs = Array.from(
+            document.querySelectorAll(
+                "#happytripHeroSearch, #diadiemInputTop, #diadiemInput"
+            )
+        );
+
+        const resultBox =
+            document.getElementById("happytripSearchResults");
+
+        if (!inputs.length || !resultBox) {
+            return;
+        }
+
+        let currentInput = null;
+        let timer = null;
+        let abortController = null;
+        let requestId = 0;
+
+        inputs.forEach(input => {
+            input.setAttribute("autocomplete", "off");
+            input.setAttribute("aria-autocomplete", "list");
+            input.setAttribute(
+                "aria-controls",
+                "happytripSearchResults"
+            );
+        });
+
+        function positionResults() {
+            if (!currentInput ||
+                resultBox.style.display === "none") {
+                return;
+            }
+
+            const rect = currentInput.getBoundingClientRect();
+
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            const width = Math.min(
+                Math.max(rect.width, 310),
+                viewportWidth - 20
+            );
+
+            const left = Math.max(
+                10,
+                Math.min(
+                    rect.left,
+                    viewportWidth - width - 10
+                )
+            );
+
+            const below = viewportHeight - rect.bottom;
+            const openUpwards =
+                below < 210 && rect.top > 230;
+
+            resultBox.style.left = `${left}px`;
+            resultBox.style.width = `${width}px`;
+
+            if (openUpwards) {
+                resultBox.style.top = "auto";
+                resultBox.style.bottom =
+                    `${viewportHeight - rect.top + 6}px`;
+
+                resultBox.style.maxHeight =
+                    `${Math.max(130, rect.top - 15)}px`;
+            } else {
+                resultBox.style.bottom = "auto";
+                resultBox.style.top =
+                    `${rect.bottom + 6}px`;
+
+                resultBox.style.maxHeight =
+                    `${Math.max(130, below - 15)}px`;
+            }
+        }
+
+        function showResults() {
+            resultBox.style.display = "block";
+            positionResults();
+        }
+
+        function hideResults() {
+            resultBox.style.display = "none";
+        }
+
+        function showMessage(message) {
+            resultBox.replaceChildren();
+
+            const item = document.createElement("div");
+            item.className = "ht-search-message";
+            item.textContent = message;
+
+            resultBox.appendChild(item);
+            showResults();
+        }
+
+        function renderResults(tours) {
+            resultBox.replaceChildren();
+
+            if (!Array.isArray(tours) || tours.length === 0) {
+                showMessage("Không tìm thấy tour phù hợp.");
+                return;
+            }
+
+            tours.forEach(tour => {
+                const link = document.createElement("a");
+                link.className = "ht-search-result";
+
+                link.href = tour.url ||
+                    `/Tour/ChiTiet?id=${encodeURIComponent(tour.idTour)}`;
+
+                const imageWrap = document.createElement("span");
+                imageWrap.className = "ht-search-result__icon";
+
+                const image = document.createElement("img");
+                image.src = tour.hinhAnh || "";
+                image.alt = tour.tenTour || "Hình ảnh tour";
+                image.loading = "lazy";
+
+                image.onerror = function () {
+                    this.onerror = null;
+                    this.remove();
+
+                    const fallback = document.createElement("i");
+                    fallback.className = "fa-solid fa-image";
+
+                    imageWrap.appendChild(fallback);
+                };
+
+                if (tour.hinhAnh) {
+                    imageWrap.appendChild(image);
+                } else {
+                    const fallback = document.createElement("i");
+                    fallback.className = "fa-solid fa-image";
+
+                    imageWrap.appendChild(fallback);
+                }
+
+                const info = document.createElement("span");
+                info.className = "ht-search-result__info";
+
+                const title = document.createElement("strong");
+                title.textContent =
+                    tour.tenTour || "Tour du lịch";
+
+                const destination = document.createElement("small");
+                destination.textContent =
+                    tour.diaDiem || "Chưa cập nhật điểm đến";
+
+                info.appendChild(title);
+                info.appendChild(destination);
+
+                const price = document.createElement("span");
+                price.className = "ht-search-result__price";
+                price.textContent = tour.gia || "Liên hệ";
+
+                link.appendChild(imageWrap);
+                link.appendChild(info);
+                link.appendChild(price);
+
+                resultBox.appendChild(link);
+            });
+
+            const footer = document.createElement("div");
+            footer.className = "ht-search-footer";
+            footer.textContent =
+                `${tours.length} gợi ý • Chọn tour để xem chi tiết`;
+
+            resultBox.appendChild(footer);
+            showResults();
+        }
+
+        async function fetchTours(input, keyword, sequence) {
+            const controller = new AbortController();
+            abortController = controller;
+
+            try {
+                const response = await fetch(
+                    "/Tour/GoiYTour?keyword=" +
+                    encodeURIComponent(keyword),
+                    {
+                        method: "GET",
+                        signal: controller.signal,
+                        cache: "no-store",
+                        headers: {
+                            "Accept": "application/json"
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const tours = await response.json();
+
+                if (
+                    sequence !== requestId ||
+                    currentInput !== input ||
+                    input.value.trim() !== keyword
+                ) {
+                    return;
+                }
+
+                renderResults(tours);
+            } catch (error) {
+                if (error.name === "AbortError") {
+                    return;
+                }
+
+                console.error(
+                    "[HappyTrip] Lỗi tìm kiếm tour:",
+                    error
+                );
+
+                if (sequence === requestId) {
+                    showMessage(
+                        "Không tải được gợi ý. Vui lòng thử lại."
+                    );
+                }
+            }
+        }
+
+        function handleSearchInput(input) {
+            currentInput = input;
+
+            clearTimeout(timer);
+            abortController?.abort();
+
+            const keyword = input.value.trim();
+            const sequence = ++requestId;
+
+            if (!keyword) {
+                hideResults();
+                return;
+            }
+
+            showMessage("Đang tìm tour phù hợp...");
+
+            timer = setTimeout(function () {
+                fetchTours(input, keyword, sequence);
+            }, 120);
+        }
+
+        inputs.forEach(input => {
+            input.addEventListener("input", function () {
+                handleSearchInput(input);
+            });
+
+            input.addEventListener("focus", function () {
+                currentInput = input;
+
+                if (input.value.trim()) {
+                    handleSearchInput(input);
+                }
+            });
+
+            input.addEventListener("keydown", function (event) {
+                if (event.key === "Escape") {
+                    hideResults();
+                }
+            });
+        });
+
+        document.addEventListener("pointerdown", function (event) {
+            const clickedInput = inputs.includes(event.target);
+
+            const clickedResults =
+                resultBox.contains(event.target);
+
+            if (!clickedInput && !clickedResults) {
+                hideResults();
+            }
+        });
+
+        window.addEventListener(
+            "resize",
+            positionResults
+        );
+
+        window.addEventListener(
+            "scroll",
+            positionResults,
+            true
+        );
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            initializeHappyTripLiveSearch,
+            { once: true }
+        );
+    } else {
+        initializeHappyTripLiveSearch();
+    }
+    })();
+</script>
+<script>
+    (function () {
+        "use strict";
+
+        function initializeHappyTripCalendar() {
+            const calendarElement =
+                document.getElementById("htCalendarDays");
+
+            const monthElement =
+                document.getElementById("htCalendarMonth");
+
+            const previousButton =
+                document.getElementById("htCalendarPrev");
+
+            const nextButton =
+                document.getElementById("htCalendarNext");
+
+            if (
+                !calendarElement ||
+                !monthElement ||
+                !previousButton ||
+                !nextButton
+            ) {
+                return;
+            }
+
+            const departureCounts =
+                @Html.Raw(System.Text.Json.JsonSerializer.Serialize(lichTheoNgay));
+
+            const selectedDate =
+                @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ngayDangChon));
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const selectedParts = selectedDate
+                ? selectedDate.split("-").map(Number)
+                : null;
+
+            let displayedYear =
+                selectedParts && selectedParts.length === 3
+                    ? selectedParts[0]
+                    : today.getFullYear();
+
+            let displayedMonth =
+                selectedParts && selectedParts.length === 3
+                    ? selectedParts[1] - 1
+                    : today.getMonth();
+
+            function formatDate(year, month, day) {
+                return (
+                    year + "-" +
+                    String(month + 1).padStart(2, "0") + "-" +
+                    String(day).padStart(2, "0")
+                );
+            }
+
+            function selectDepartureDate(date) {
+                const url = new URL(window.location.href);
+
+                if (selectedDate === date) {
+                    url.searchParams.delete("ngaydi");
+                } else {
+                    url.searchParams.set("ngaydi", date);
+                }
+
+                url.searchParams.delete("page");
+
+                window.location.assign(url.toString());
+            }
+
+            function renderCalendar() {
+                calendarElement.replaceChildren();
+
+                monthElement.textContent =
+                    "Tháng " +
+                    (displayedMonth + 1) +
+                    " | " +
+                    displayedYear;
+
+                const firstDay = new Date(
+                    displayedYear,
+                    displayedMonth,
+                    1
+                );
+
+                const daysInMonth = new Date(
+                    displayedYear,
+                    displayedMonth + 1,
+                    0
+                ).getDate();
+
+                const startOffset =
+                    (firstDay.getDay() + 6) % 7;
+
+                for (let i = 0; i < startOffset; i++) {
+                    const emptyCell =
+                        document.createElement("span");
+
+                    calendarElement.appendChild(emptyCell);
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = formatDate(
+                        displayedYear,
+                        displayedMonth,
+                        day
+                    );
+
+                    const tourCount = departureCounts[date] || 0;
+
+                    const button =
+                        document.createElement("button");
+
+                    button.type = "button";
+                    button.className = "ht-calendar-day";
+
+                    const dayNumber =
+                        document.createElement("span");
+
+                    dayNumber.className =
+                        "ht-calendar-day-number";
+
+                    dayNumber.textContent = day;
+
+                    button.appendChild(dayNumber);
+
+                    const dayIsToday =
+                        displayedYear === today.getFullYear() &&
+                        displayedMonth === today.getMonth() &&
+                        day === today.getDate();
+
+                    if (dayIsToday) {
+                        button.classList.add("is-today");
+                        button.title = "Hôm nay";
+                        button.setAttribute("aria-current", "date");
+                    }
+
+                    if (tourCount > 0) {
+                        button.classList.add("has-tour");
+
+                        const countLabel =
+                            document.createElement("span");
+
+                        countLabel.className =
+                            "ht-calendar-day-count";
+
+                        countLabel.textContent =
+                            tourCount + " tour";
+
+                        button.appendChild(countLabel);
+
+                        button.setAttribute(
+                            "aria-label",
+                            date + ", " + tourCount + " tour"
+                        );
+
+                        if (selectedDate === date) {
+                            button.classList.add("is-selected");
+
+                            button.setAttribute(
+                                "aria-pressed",
+                                "true"
+                            );
+                        } else {
+                            button.setAttribute(
+                                "aria-pressed",
+                                "false"
+                            );
+                        }
+
+                        button.addEventListener(
+                            "click",
+                            function () {
+                                selectDepartureDate(date);
+                            }
+                        );
+                    } else {
+                        button.disabled = true;
+                    }
+
+                    calendarElement.appendChild(button);
+                }
+            }
+
+            previousButton.addEventListener("click", function () {
+                displayedMonth--;
+
+                if (displayedMonth < 0) {
+                    displayedMonth = 11;
+                    displayedYear--;
+                }
+
+                renderCalendar();
+            });
+
+            nextButton.addEventListener("click", function () {
+                displayedMonth++;
+
+                if (displayedMonth > 11) {
+                    displayedMonth = 0;
+                    displayedYear++;
+                }
+
+                renderCalendar();
+            });
+
+            renderCalendar();
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener(
+                "DOMContentLoaded",
+                initializeHappyTripCalendar
+            );
+        } else {
+            initializeHappyTripCalendar();
+        }
+    })();
+</script>
